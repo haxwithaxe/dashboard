@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta http-equiv="Cache" content="no-cache" />
+    <meta http-equiv="Pragma-Control" content="no-cache" />
+    <meta http-equiv="Cache-directive" content="no-cache" />
+    <meta http-equiv="Pragma-directive" content="no-cache" />
+    <meta http-equiv="Cache-Control" content="no-cache" />
+    <meta http-equiv="Pragma-directive: no-cache" />
+    <meta http-equiv="Cache-directive: no-cache" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="VA3HDL Ham Radio Dashboard" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css?family=Victor Mono|Audiowide|Bebas Neue"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <title>Dashboard</title>
+    <link href="hamdash.css" rel="stylesheet"></link>
+    <script src="wheelzoom.js"></script>
+    <template id="error-block">
+      <div class="error-block">
+      </div>
+    </template>
+    <template id="error-message">
+      <div class="error error-message"></div>
+    </template>
+    <template id="menu-item">
+      <div class="menu-item">
+        <a class="menu-item" href="#"></a>
+      </div>
+    </template>
+    <template id="tile-container">
+      <div class="tile-container" order="-1">
+        <div class="tile-title"></div>
+        <video class="tile-video media hidden" controls="true" autoplay="true" loop="true">
+          <source></source>
+        </video>
+        <img class="tile-image hidden"></img>
+        <iframe class="tile-iframe hidden"></iframe>
+      </div>
+    </template>
+    <template id="feed-title">
+      <span class="feed-title">No feed title</span>
+    </template>
+    <template id="feed-item"><span class="feed-item"><a class="feed-item" target="_blank" href="#">No feed item title</a></span></template>
+    <template id="feed-delim">
+      <span class="feed-item" >-</a>
+    </template>
+    <!-- config UI templates -->
+    <template id="configs-container">
+      <div class="configs-container">
+        <div class="config-rows">
+          <span class="config-item-label config-rows-label">Rows</span><span class="config-rows-value"></span>
+        </div>
+        <div class="config-columns">
+          <span class="config-item-label config-columns-label">Columns</span><span class="config-columns-value"></span>
+        </div>
+        <div class="config config-top-bar">
+          <div class="config-label">Top bar</div>
+          <div class="config-top-bar-left hidden">
+            <div class="config-label">Left</div>
+            <span class="config-top-bar-left-text">
+              <span class="config-top-bar-left-text-label">Text</span><span class="config-top-bar-left-text-value"></span>
+            </span>
+            <span class="config-top-bar-left-bgcolor hidden">
+              <span class="config-top-bar-left-bgcolor-label">Background Color</span><span class="config-top-bar-left-bgcolor-value"></span>
+            </span>
+            <span class="config-top-bar-left-color hidden">
+              <span class="config-top-bar-left-text-color-label">Text color</span><span class="config-top-bar-left-text-color-value"></span>
+            </span>
+          </div>
+          <div class="config-top-bar-center">
+            <div class="config-label">Center</div>
+            <span class="config-top-bar-center-text">
+              <span class="config-item-label config-top-bar-center-text-label">Text</span><span class="config-top-bar-center-text-value"></span>
+            </span>
+            <span class="config-item-label config-top-bar-center-bgcolor hidden">
+              <span class="config-top-bar-center-bgcolor-label">Background Color</span><span class="config-top-bar-center-bgcolor-value"></span>
+            </span>
+            <span class="config-item-label config-top-bar-center-text-color hidden">
+              <span class="config-top-bar-center-text-color-label">Text color</span><span class="config-top-bar-center-text-color-value"></span>
+            </span>
+          </div>
+          <div class="config-top-bar-right hidden">
+            <div class="config-label">Right</div>
+            <span class="config-top-bar-right-text hidden">
+              <span class="config-item-label config-top-bar-right-text-label">Text</span><span class="config-top-bar-right-text-value"></span>
+            </span>
+            <span class="config-top-bar-right-bgcolor hidden">
+              <span class="config-item-label config-top-bar-right-bgcolor-label">Background Color</span><span class="config-top-bar-right-bgcolor-value"></span>
+            </span>
+            <span class="config-top-bar-right-color hidden">
+              <span class="config-item-label config-top-bar-right-text-color-label">Text color</span><span class="config-top-bar-right-text-color-value"></span>
+            </span>
+          </div>
+        </div>
+        <div class="config config-menus">
+          <div class="config-label">Menus</div>
+          <div class="config-user-menu-left">
+            <div class="config-label">Left</div>
+            <div class="config-user-menu-left-container"></div>
+          </div>
+          <div class="config-menu-right">
+            <div class="config-label">Right</div>
+            <div class="config-user-menu-right-container"></div>
+          </div>
+        </div>
+        <div class="config config-feeds">
+          <div class="config-label">Feeds</div>
+          <div class="config-feeds-container">
+          </div>
+        </div>
+        <div class="config config-tiles">
+          <div class="config-label">Tiles</div>
+          <div class="config-tiles-container">
+          </div>
+        </div>
+      </div>
+    </template>
+    <template id="config-feed-item">
+      <div class="config-feed-item">
+        <div class="config-item-label config-feed-item-url-label">URL</span><span class="config-feed-item-url-value"></div>
+        <span class="config-item-label config-feed-item-bgcolor-label hidden">Background color</span><span class="config-feed-item-bgcolor-value hidden"></span>
+        <span class="config-item-label config-feed-item-text-color-label hidden">Text color</span><span class="config-feed-item-text-color-value hidden"></span>
+        <span class="config-item-label config-feed-item-refresh-interval-label">Text refresh interval</span><span class="config-feed-item-refresh-interval-value"></span>
+        <span class="config-item-label config-feed-item-title-text-color-label hidden">Title text color</span><span class="config-feed-item-title-text-color-value hidden"></span>
+        <span class="config-item-label config-feed-item-scroll-speed-label">Feed scroll speed<small class="config-label-note">(pixels per second)</small></span><span class="config-feed-item-scroll-speed-value"></span>
+      </div>
+    </template>
+    <template id="config-menu-item">
+      <div class="config-menu-item">
+        <div class="config-item-label config-menu-item-text-label">Text</span><span class="config-menu-item-text-value"></div>
+        <div class="config-item-label config-menu-item-url-label">URL</span><span class="config-menu-item-url-value"></div>
+        <span class="config-item-label config-menu-item-bgcolor-label">Background color</span><span class="config-menu-item-bgcolor-value"></span>
+        <span class="config-item-label config-menu-item-color-label">Text color</span><span class="config-menu-item-color-value"></span>
+      </div>
+    </template>
+    <template id="config-tile">
+      <div class="config-tile">
+        <div>
+          <span class="config-item-label config-tile-title-label">Title</span><span class="config-tile-title-value"></span>
+        </div>
+        <span class="config-item-label config-tile-rotate-interval-label">
+          <span class="tooltip-container">Rotate interval
+            <div class="tooltip-text-container">
+              <div class="tooltip-label">Interval syntax</div>
+              <div class="tooltip-text">
+                Either a number of milliseconds without units or a number with units (s=seconds, m=minutes, h=hours, d=days, w=weeks).
+              </div>
+              <div class="tooltip-header">Examples</div>
+              <ul>
+                <li><span class="code">300000</span> is 5 minutes in milliseconds.</li>
+                <li><span class="code">300s</span> is 5 minutes in seconds.</li>
+                <li><span class="code">5m</span> is 5 minutes.</li>
+                <li><span class="code">3h</span> is 3 hours.</li>
+                <li><span class="code">11d</span> is 11 days.</li>
+                <li><span class="code">0.5w</span> is half a week.</li>
+              </ul>
+            </div>
+          </span>
+        </span>
+        <span class="config-tile-rotate-interval-value"></span>
+        <span class="config-item-label config-tile-refresh-interval-label">
+          <span class="tooltip-container">Refresh interval
+            <span class="tooltip-text-container">
+              <div class="tooltip-label">Interval syntax</div>
+              <div class="tooltip-text">
+                Either a number of milliseconds without units or a number with units (s=seconds, m=minutes, h=hours, d=days, w=weeks).
+              </div>
+              <div class="tooltip-header">Examples</div>
+              <ul>
+                <li><span class="code">300000</span> is 5 minutes in milliseconds.</li>
+                <li><span class="code">300s</span> is 5 minutes in seconds.</li>
+                <li><span class="code">5m</span> is 5 minutes.</li>
+                <li><span class="code">3h</span> is 3 hours.</li>
+                <li><span class="code">11d</span> is 11 days.</li>
+                <li><span class="code">0.5w</span> is half a week.</li>
+              </ul>
+            </span>
+          </span>
+        </span>
+        <span class="config-tile-refresh-interval-value"></span>
+        <span class="config-item-label config-tile-fit-label">
+          <span class="tooltip-container">Fit
+            <div class="tooltip-text-container">
+              Either <pre>width</pre> or <pre>hight</pre> or not given.
+            </div>
+          </span>
+        </span>
+        <span class="config-tile-fit-value"></span>
+        <span class="config-item-label config-tile-scale-label">Scale</span><span class="config-tile-scale-value"></span>
+        <div class="config-label">Sources</div>
+        <ul class="config-tile-sources-container">
+        </ul>
+      </div>
+    </template>
+    <template id="config-tile-source">
+      <li class="config-tile-source">
+        <span class="config-item-label config-tile-source-url-label">URL</span><span class="config-value config-tile-source-url-value"></span>
+        <span class="config-item-label config-tile-source-refresh-interval-label">Refresh interval</span><span class="config-value config-tile-source-refresh-interval-value"></span>
+        <span class="config-item-label config-tile-source-rotate-interval-label">Rotate interval</span><span class="config-value config-tile-source-rotate-interval-value"></span>
+        <span class="config-item-label config-tile-source-iframe-label">Is IFrame</span><span class="config-value config-tile-source-iframe-value"></span>
+        <span class="config-item-label config-tile-source-mimetype-label">Mimetype</span><span class="config-value config-tile-source-mimetype-value"></span>
+      </li>
+    </template>
+    <debug id="debug"></debug>
+    <script src="config.js"></script>
+    <script src="lib.js"></script>
+  </head>
+  <body>
+
+    <div id="iframe-container" class="iframe-container">
+      <iframe id="full-screen" class="full-screen" src="" title="Zoom"></iframe>
+    </div>
+
+    <div id="focused-container" class="focused-image">
+      <video id="focused-video" class="focused-image media hidden" controls="true" autoplay="true" loop="true">
+        <source></source>
+      </video>
+      <iframe id="focused-iframe" class="focused-image hidden"></iframe>
+      <img id="focused-image" class="focused-image" alt="Enlarged image"></img>
+    </div>
+
+    <div id="user-menu-right" class="user-menu menu-right">
+      <!-- Right Menu container -->
+    </div>
+    <div id="menu-left" class="menu menu-left">
+      <div class="menu-item menu-item-left back-button"><a class="menu-item menu-item-left" href="#" >Back</a></div>
+      <div class="menu-item menu-item-left refresh-button"><a class="menu-item menu-item-left" href="#" >Refresh</a></div>
+      <div class="menu-item menu-item-left sources-button"><a class="menu-item menu-item-left" href="#" >Sources</a></div>
+      <div class="menu-item menu-item-left help-button"><a class="menu-item menu-item-left" href="#" >Help</a></div>
+      <div class="menu-item menu-item-left update-button hidden"><a class="menu-item menu-item-left" href="#" >Update</a></div>
+    </div>
+    <div id="user-menu-left" class="user-menu menu-left">
+      <!-- Left Menu container -->
+    </div>
+
+    <div id="menu-right" class="menu menu-right hidden">
+      <div class="menu-item menu-item-left back-button hidden"><a class="menu-item menu-item-left" href="#">Back</a></div>
+      <div class="menu-item menu-item-left refresh-button hidden"><a class="menu-item menu-item-left" href="#">Refresh</a></div>
+      <div class="menu-item menu-item-left sources-button hidden"><a class="menu-item menu-item-left" href="#">Sources</a></div>
+      <div class="menu-item menu-item-left help-button hidden"><a class="menu-item menu-item-left" href="#">Help</a></div>
+      <div class="menu-item menu-item-left update-button hidden"><a class="menu-item menu-item-left" href="#">Update</a></div>
+    </div>
+
+    <div id="default-frame" class="default-frame">
+      <div class="error-block hidden" id="global-error"></div>
+      <div class="top-bar">
+        <div id="top-bar-left" class="child">
+          &nbsp;
+        </div>
+        <div id="top-bar-center" class="child">
+          &nbsp;
+        </div>
+        <div id="top-bar-right" class="child">
+          &nbsp;
+        </div>
+      </div>
+      <div id="tiles" class="dashboard">
+        <!-- Images container -->
+      </div>
+    </div>
+
+    <div id="overlay" class="overlay">
+      <div class="close-button">&#10006;</div>
+      <div class="overlay-content">
+        <div class="config-title">
+          <b>Full config.js file: </b>
+          <a href="config.js" target="_blank" style="color: white">
+            (Open in new tab)
+          </a>
+          <p></p>
+          <div id="config-display-container">
+            <div id="config-display"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="feed-ticker" id="feed-ticker">
+      <span class="feed-ticker-content feed-ticker-error hidden" id="feed-ticker-error">Failed to load feeds.</span>
+      <span class="feed-ticker-container" id="feed-ticker-container"></span>
+    </div>
+  </body>
+  <script src="main.js"></script>
+</html>
