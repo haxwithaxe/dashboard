@@ -3,112 +3,11 @@ const projectReleasesUrl = "https://github.com/haxwithaxe/dashboard/releases/"
 const projectLatestReleaseApiUrl = "https://api.github.com/repos/haxwithaxe/dashboard/releases/latest"
 const proxyUrl = "https://corsproxy.io/";
 const videoExtensions = [".mp4", ".webm", ".ogg", ".ogv"];
-const defaultValues = {
-  topBar: {
-    left: {
-      bgColor: null,
-      text: null,
-      textColor: null,
-    },
-    center: {
-      bgColor: null,
-      text: "CALLSIGN - Locator",
-      textColor: null,
-    },
-    right: {
-      bgColor: null,
-      text: null,
-      textColor: null,
-    }
-  },
-  columns: 4,
-  rows: 3,
-  feed: {
-    refreshInterval: "5m",
-    titleTextColor: null,
-    textColor: null,
-    bgColor: null,
-    scrollSpeed: 180, // pixels per second
-  },
-  menu: {
-    bgColor: null,
-    textColor: null,
-    side: "left",
-  },
-  tile: {
-    order: -1,
-    fit: "both",
-    rotateInterval: "5m",
-    refreshInterval: "5m",
-    scale: 1,
-  },
-};
 
-
-function forEachElementByClassName(className, func) {
-  return Array.from(document.getElementsByClassName(className)).forEach(func);
-}
-
-function getFeedById(feedId) {
-  return dashboard.feeds.find((feed) => feed.id == feedId);
-}
-
-
-function getMenuItemById(menuItemId) {
-  return dashboard.menu.find((item) => item.id == menuItemId);
-}
-
-
-function getTileById(tileId) {
-  return dashboard.tiles.find((tile) => tile.idEquals(tileId));
-}
-
-
-function refresh(event) {
-  console.debug("refresh", event);
-  event.preventDefault();
-  var targetElement = event.target || event.srcElement;
-  if (isFocused()) {
-    return;
-  }
-  getTileById(targetElement.id).refresh();
-}
-
-
-function refreshTileById(tileId) {
-  console.debug("imgRefresh: tileId", tileId)
-  getTileById(tileId).refresh();
-}
-
-
-function rotate(event) {
-  console.debug("rotate", event);
-  event.preventDefault();
-  const targetElement = event.target || event.srcElement;
-  const tile = getTileById(targetElement.id);
-  console.debug("rotate: tile", tile);
-  tile.rotate();
-}
-
-
-function rotateTileById(tileId) {
-  console.debug("imgRotate: tileId", tileId)
-  getTileById(tileId).rotate();
-}
-
-
-function startTiles() {
-  dashboard.tiles.show();
-}
-
-
-function stopTiles() {
-  dashboard.tiles.stop();
-}
 
 function createFromTemplate(id) {
-  console.debug("createFromTemplate(id)", id);
   const templateElem = document.getElementById(id);
+  // Strip leading and trailing whitespace to avoid extra empty text nodes
   templateElem.innerHTML = templateElem.innerHTML.replace(/^[ \t\n\r]+/, "").replace(/[ \t\n\r]+$/, "");
   return templateElem.content.cloneNode(true);
 }
@@ -117,13 +16,9 @@ function createFromTemplate(id) {
 async function checkForUpdates() {
   const latestVersion = await getLatestVersion();
   if (currentVersion != latestVersion) {
-    forEachElementByClassName("update-button", (elem) => () => {
-      if (elem.parentNode.querySelector(".help-button").checkVisibility()) {
-        elem.style.display = "block";
-      }
-    });
+    document.getElementById("update-button").style.display = "block";
   } else {
-    forEachElementByClassName("update-button", (elem) => elem.style.display = "none");
+    document.getElementById("update-button").style.display = "none";
   }
 }
 
@@ -139,9 +34,23 @@ async function checkIfFileExists(url) {
 }
 
 
-// Generate a probably unique ID one way or another
-// Arguments:
-//   uniquish: Some relatively unique within collection string
+// This function shows the larger images when double click to enlarge
+function defocusImage(event) {
+  //console.debug("defocusImage");
+  event.preventDefault();
+  const focusedContainer = document.getElementById("focused-container");
+  focusedContainer.removeAttribute("tile");
+  focusedContainer.style.display = "none";
+  focusedContainer.style.zIndex = -2;
+  // Start rotation and refreshes
+  startTiles();
+}
+
+
+/* Generate a probably unique ID one way or another
+ * Arguments:
+ *   uniquish: Some relatively unique within collection string
+ */
 function generateId(uniquish) {
   if (self.crypto !== undefined && self.crypto.randomUUID !== undefined) {
     return self.crypto.randomUUID();
@@ -152,13 +61,6 @@ function generateId(uniquish) {
     hash |= 0; // Constrain to 32bit integer
   }
   return hash.toString() + randomInt(1000).toString();
-}
-
-
-// Image cache prevention
-// Check if the image URL already include parameters, then avoid the random timestamp
-function getImageURL(url) {
-  return url.includes("?") ? url : url + "?_=" + Date.now();
 }
 
 
@@ -174,78 +76,26 @@ async function getLatestVersion() {
 }
 
 
-function getVideoType(src) {
-  if (src.includes(".mp4")) {
-    return "video/mp4";
-  }
-  if (src.includes(".webm")) {
-    return "video/webm";
-  }
-  if (src.includes(".ogg") || src.includes(".ogv")) {
-    return "video/ogg";
-  }
-  return;
-}
-
-
-function isFocused() {
-  const isVisibile = document.getElementById("focused-image").checkVisibility();
-  console.debug("isFocused: visibility", isVisibile);
-  return isVisibile;
-}
-
-
-// This function shows the larger images when double click to enlarge
-function defocusImage(event) {
-  console.debug("defocusImage");
-  event.preventDefault();
-  const focusedImage = document.getElementById("focused-image");
-  focusedImage.style.display = "none";
-  focusedImage.style.zIndex = -2;
-  // Start rotation and refreshes
-  startTiles();
-}
-
-function focusImageById(tileId) {
-  console.debug("focusImageById", tileId);
-  const tile = getTileById(tileId);
-  const focusedImage = document.getElementById("focused-image");
-  const focusedContainer = document.getElementById("focused-container");
-  // Stop rotation and refreshes
-  window.stop();
-  stopTiles();
-  focusedImage.style.display = "block";
-  focusedImage.style.zIndex = 3;
-  focusedImage.src = tile.sources.current.url.replace(/^url\(["']?/, "").replace(/["']?\)$/, "");
-  focusedImage.ondbclick = defocusImage;
-  focusedContainer.oncontextmenu = ((event) => {
-    console.debug("focusImageById oncontextmenu start", tileId);
-    event.preventDefault();
-    rotateTileById(tileId);
-    document.getElementById("focused-image").src = getTileById(tileId).sources.current.url
-        .replace(/^url\(["']?/, "")
-        .replace(/["']?\)$/, "");
-  });
-  console.debug("focusImageById end", tileId);
-}
-
-// This function shows the larger images when double click to enlarge
-function focusImage(event) {
-  event.preventDefault();
-  var targetElement = event.target || event.srcElement;
-  console.debug("focusImage", targetElement);
-  focusImageById(targetElement.id);
-}
-
-
-function onMenuClick(menuItemId) {
-  console.debug("onMenuClick: menuItemId", menuItemId);
-  item = getMenuItemById(menuItemId);
-  item.onClickCallback()
-}
-
-
-// Parse an interval string and return the equivalent milliseconds
+/* Parse an interval string and return the equivalent milliseconds
+ *
+ * Arguments:
+ *   interval_string: An interval composed of a number and optionally a unit.
+ *     Units:
+ *       <none>: Milliseconds
+ *       s: Seconds
+ *       m: Minutes
+ *       h: Hours
+ *       d: Days
+ *       w: Weeks
+ *
+ * Examples:
+ *   300000 = 300000 milliseconds (aka 5 minutes)
+ *   600s = 600 seconds
+ *   20m = 20 minutes
+ *   3h = 3 hours
+ *   4d = 4 days
+ *   2w0.5d11m = 2 weeks, 0.5 days, and 11 minutes (combined)
+ */
 function parseInterval(interval_string) {
   if (interval_string == null) {
     return 0;
@@ -304,6 +154,16 @@ function sortCompareOrder(a, b) {
 }
 
 
+function startTiles() {
+  dashboard.tiles.show();
+}
+
+
+function stopTiles() {
+  dashboard.tiles.stop();
+}
+
+
 class TimeSource {
 
   constructor() {
@@ -329,356 +189,269 @@ class TimeSource {
 const sharedTime = new TimeSource();
 
 
-class TopBarPart {
-  
-  // A top bar part
-  // Arguments:
-  //  id: The element ID of the top bar part.
-  //  config:
-  //  defaults:
-  //  getText (optional): The callback to get the text of the top bar part. 
-  constructor(id, config, defaults, getText) {
-    this.id = id;
-    if (config === undefined) {
-      config = {};
-    } else if (typeof config.toSpec == "function") {
-      config = config.toSpec();
+class Item {
+
+  static create(spec, defaults) {
+    //console.debug("Item.create(spec, defaults)", spec, defaults);
+    var values = {};
+    if (defaults !== undefined) {
+      values = Object.assign({}, defaults);
     }
-    this.textOverride = config.text !== undefined ? config.text : defaults.text;
-    this.textColor = config.textColor !== undefined ? config.textColor : defaults.textColor;
-    this.bgColor = config.bgColor !== undefined ? config.bgColor : defaults.bgColor;
-    this.getText = getText !== undefined ? getText : function() { return this.textOverride; };
+    values = Object.assign(Object.assign(values, spec), {_defaults: defaults, _spec: spec});
+    const sealed = Object.assign(Object.create(this.prototype), new this(Item));
+    const newObj = Object.assign(sealed, values);
+    newObj.postConstructor();
+    return newObj;
   }
 
-  // Show the TopBar part
-  show() {
-    const element = document.getElementById(this.id);
-    if (this.bgColor != null) {
-      element.style.backgroudColor = this.bgColor;
+  constructor(values) {
+    if (!values instanceof Item) {
+      throw new Error(`Use ${this.constructor.name}.create(...) instead of new operator`);
     }
-    if (this.textColor != null) {
-      element.style.color = this.textColor;
+  }
+
+  postConstructor() {
+    //console.debug(`${this.constructor.name}.postConstructor: this.id before`, this.id);
+    if (this.id === undefined) {
+      this.id = generateId(this.constructor.name);
     }
-    if (this.textOverride != null) {
-      element.innerHTML = this.textOverride;
+    //console.debug(`${this.constructor.name}.postConstructor: this.id after`, this.id);
+    this.insert();
+  }
+
+  populateTemplate(fragment) {
+    return fragment;
+  }
+
+  insert() {
+    if (this.templateId === undefined) {
+      //console.debug(`${this.constructor.name}.insert: missing templateId`, this);
+      return;
+    }
+    this.fragment = createFromTemplate(this.templateId);
+    this.fragment.childNodes.forEach((child) => child.id = this.id);
+    this.fragment = this.populateTemplate(this.fragment);
+    this.setCallbacks(this.fragment);
+    if (this.containerElem == null || this.containerElem === undefined) {
+      document.getElementById(this.parentContainerId).appendChild(this.fragment);
     } else {
-      element.innerHTML = this.getText();
+      console.debug("this.containerElem", this.containerElem, this.fragment);
+      this.containerElem.replaceWith(this.fragment);
     }
+  }
+
+  setCallbacks(fragment) {
+    return fragment;
+  }
+
+  get containerElem() {
+    const elem = document.getElementById(this.id);
+    //console.debug(`${this.constructor.name}.containerElem: this.id`, this.id, elem);
+    return elem;
+  }
+
+  equals(other) {
+    for (let key in this) {
+      let a = this[key];
+      let b = other[key];
+      if (!Object.is(a, b)) {
+        if (a == null || b == null) {
+          return false;  
+        } else if (a instanceof Item && b instanceof Item) {
+          if (!a.equals(b)) {
+            return false;
+          }
+        } else if (!Object.is(a.valueOf(), b.valueOf())) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 }
 
 
-class TopBar {
+class Collection extends Item {
 
-  // Arguments:
-  //   config: Top bar config Object
-  //   defaults: Default values Object
-  constructor(config, defaults) {
-    if (config.toSpec !== undefined) {
-      config = config.toSpec();
+  childClass;
+  childDefaults;
+  specs = [];
+
+  static create(spec, defaults) {
+    //console.debug("Collection.create(spec, defaults)", spec, defaults);
+    if (Array.isArray(spec)) {
+      spec = {specs: spec};
     }
-    this.left = new TopBarPart(
-      "top-bar-left",
-      config.left,
-      {bgColor: null, text: null, textColor: null},
-      this.getLeftText
-    );
-    this.center = new TopBarPart(
-      "top-bar-center", 
-      config.center, 
-      {bgColor: null, text: defaults.center.text, textColor: null}, 
-      this.getCenterText  // pass undefined so that an override will be passed
-    );
-    this.right = new TopBarPart(
-      "top-bar-right", 
-      config.right, 
-      {bgColor: null, text: null, textColor: null},
-      this.getRightText
-    );
+    return super.create(spec, defaults);
   }
 
-  // Default left text callback.
-  getLeftText() {
-    sharedTime.update();
-    const localDate = sharedTime.now.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
+  postConstructor() {
+    this.children = [];
+    super.postConstructor();
+    if (this.childDefaults === undefined) {
+      this.childDefaults = this;
+    }
+    this.specs.forEach((childSpec) => {
+      this.children.push(this.childClass.create(childSpec, this.childDefaults));
     });
-    const localTime = sharedTime.now.toLocaleTimeString("en-US", {
-      hour12: false,
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      timeZoneName: "short",
-    });
-    return `${localDate} - ${localTime}`;
   }
 
-  // Default right text callback.
-  getRightText() {
-    sharedTime.update();
-    const utcDate = sharedTime.now.toISOString().slice(0, 10);
-    const utcTime = sharedTime.now.toISOString().slice(11, 19) + " UTC";
-    return `${utcDate} ${utcTime}`;
+  get length() {
+    return this.children.length;
   }
 
-  show() {
-    this.left.show();
-    this.center.show();
-    this.right.show();
+  append(childSpec) {
+    if (childSpec instanceof this.childClass) {
+      childSpec = childSpec.toSpec();
+    }
+    this.children.append(this.childClass.create(childSpec, this.childDefaults));
   }
 
-  toSource(template) {
-    if (this.left.text != null && this.left.bgColor != null && this.left.textColor != null) {
-      template.querySelector("config-top-bar-left-container").classList.remove("hidden");
-    }
-    setTemplateValue(template, "config-top-bar-left-text", this.left.text, this.left.text != null);
-    setTemplateValue(template, "config-top-bar-left-bgcolor", this.left.bgColor, this.left.bgColor != null);
-    setTemplateValue(template, "config-top-bar-left-text-color", this.left.textColor, this.left.textColor != null);
+  filter(func) {
+    this.children.filter(func);
+  }
+  
+  find(func) {
+    return this.children.find(func);
+  }
 
-    if (this.center.text != null && this.center.bgColor != null && this.center.textColor != null) {
-      template.querySelector("config-top-bar-center-container").classList.remove("hidden");
+  findIndexById(childId) {
+    if (childId instanceof this.childClass) {
+      childId = childId.id;
     }
-    setTemplateValue(template, "config-top-bar-center-text", this.center.text, this.center.text != null);
-    setTemplateValue(template, "config-top-bar-center-bgcolor", this.center.bgColor, this.center.bgColor != null);
-    setTemplateValue(template, "config-top-bar-center-text-color", this.center.textColor, this.center.textColor != null);
+    return this.children.findIndex(this.get(childId));
+  }
 
-    if (this.right.text != null && this.right.bgColor != null && this.right.textColor != null) {
-      template.querySelector("config-top-bar-right-container").classList.remove("hidden");
+  get(childId) {
+    if (childId instanceof this.childClass) {
+      childId = childId.id;
     }
-    setTemplateValue(template, "config-top-bar-right-text", this.right.text, this.right.text != null);
-    setTemplateValue(template, "config-top-bar-right-bgcolor", this.right.bgColor, this.right.bgColor != null);
-    setTemplateValue(template, "config-top-bar-right-text-color", this.right.textColor, this.right.textColor != null);
-    
-    return template;
+    return this.children.find((child) => child.id == childId);
+  }
+
+  insert() {
+    document.getElementById(this.id).childNodes.forEach((child) =>
+      document.getElementById(this.id).removeChild(child)
+    );
+    this.children.sort(sortCompareOrder).forEach((child) => child.show());
+  }
+
+  map(func) {
+    return this.children.map(func);
+  }
+
+  push(child) {
+    this.children.push(child);
+  }
+
+  pop(child) {
+    if (childId instanceof this.childClass) {
+      childId = childId.id;
+    }
+    return this.children.pop(this.findIndexById(child));
+  }
+
+  shift(child) {
+    return this.children.shift(child);
+  }
+
+  toSpec() {
+    return this.children.map((child) => child.toSpec());
+  }
+
+  unshift(child) {
+    this.children.unshift(child);
   }
 }
 
 
-class Config {
+class UrlCollection extends Collection {
 
-  // Arguments:
-  //  config: An Object of config values
-  //  defaults: An Object of default config values
-  constructor(config, defaults) {
-    this.columns = config.columns !== undefined ? config.columns : defaults.columns;
-    this.comment = config.comment !== undefined ? config.comment : null;
-    this.rows = config.rows !== undefined ? config.rows : defaults.rows;
-    this.feedScrollSpeed = config.feedScrollSpeed !== undefined ? config.feedScrollSpeed : defaults.feed.scrollSpeed;
-    Object.assign(defaults.feed, {scrollSpeed: this.feedScrollSpeed});
-    this.menuLeft = new Menu("user-menu-left", config.menuLeft, defaults.menuLeft);
-    this.menuRight = new Menu("user-menu-right", config.menuRight, defaults.menuRight);
-    this.feeds = (config.feeds || []).map((feed) => new Feed(feed, defaults.feed));
-    this.tiles = new Tiles(config.tiles, defaults.tile);
-    this.topBar = new TopBar(config.topBar, defaults.topBar);
+  static create(spec, defaults) {
+    if (typeof spec == "string") {
+      spec = {specs: [{url: spec}]};
+    } else if (Array.isArray(spec)) {
+      spec = {
+        specs: spec.map((s) => {
+          if (typeof s == "string") {
+            return {url: s};
+          }
+          if (s instanceof this) {
+            return s.toSpec();
+          }
+          return s;
+        })
+      };
+    }
+    return super.create(spec, defaults);
+  }
+}
+
+
+class Config extends Item {
+
+  columns = 4;
+  comment = null;
+  defaultMenuSide = "left";
+  rows = 3;
+  feedScrollSpeed = 180;
+  menu = {};
+  feeds = {};
+  tiles = {};
+  topBar = {};
+
+  postConstructor() {
+    //console.debug("Config.postConstructor: this", this);
+    this.menu = Menu.create(this.menu);
+    this.feeds = Feeds.create(this.feeds, {scrollSpeed: this.feedScrollSpeed});
+    this.tiles = Tiles.create(this.tiles);
+    this.topBar = TopBar.create(this.topBar);
   }
 
   toSpec() {
     return {
       columns: this.columns,
-      rows: this.rows,
+      defaultMenuSide: this.defaultMenuSide,
       feedScrollSpeed: this.feedScrollSpeed,
-      menuLeft: this.menuLeft.toSpec(),
-      menuRight: this.menuRight.toSpec(),
-      feeds: this.feeds.map((feed) => feed.toSpec()),
-      tiles: this.tiles.map((tile) => tile.toSpec()),
-      topBar: this.topBar,
+      rows: this.rows,
+      feeds: this.feeds.toSpec(),
+      menu: this.menu.toSpec(),
+      tiles: this.tiles.toSpec(),
+      topBar: this.topBar.toSpec(),
     };
-  }
-
-  toSources() {
-    console.debug("Config.toSources: this", this);
-    const template = createFromTemplate("configs-container");
-    console.debug("Config.toSources: template before rows", template);
-    setTemplateValue(template, "config-rows", this.rows);
-    console.debug("Config.toSources: template after rows", template);
-    setTemplateValue(template, "config-columns", this.columns);
-    this.topBar.toSource(template);
-    this.menuLeft.toSource(template);
-    this.menuRight.toSource(template);
-    this.feeds.forEach((feed) => template.querySelector(".config-feeds-container").appendChild(feed.toSource()));
-    this.tiles.toSource(template);
-    template.id = "container-display";
-    return template;
   }
 
   start() {
     this.topBar.show();
-    this.menuLeft.show();
-    this.menuRight.show();
+    this.menu.hide();
     this.tiles.start();
   }
 }
 
 
-class MenuItem {
+class Feed extends Item {
 
-  constructor(config, menuClass, defaults) {
-    // config will always be undefined, null, or an object
-    if (config === undefined || config == null) {
-      config = {};
-    }
-    this.order = config.order !== undefined ? config.order : -1;
-    this.bgColor = config.bgColor !== undefined ? config.bgColor : defaults.bgColor;
-    this.comment = config.comment !== undefined ? config.comment : null;
-    this.textColor = config.textColor !== undefined ? config.textColor : defaults.textColor;
-    this.text = config.text !== undefined ? config.text : "No Text";
-    this.scale = config.scale !== undefined ? config.scale : defaults.scale;
-    this.url = config.url !== undefined ? config.url : "#";
-    this.menuClass = menuClass;
-    // Allow for override
-    this.onClickCallback = config.onClickCallback !== undefined ? config.onClickCallback : function() {
-      document.getElementById("iframe-container").style.zIndex = 1;
-      document.getElementById("full-screen").style.display = "block";
-      document.getElementById("full-screen").src = this.url;
-      document.getElementById("full-screen").style.transform = `scale(${this.scale})`;
-    };
-    this.id = generateId(this.text + this.url);
-    this.element = createFromTemplate("menu-item");
-    this.element.id = this.id;
-    this.element.classList(this.menuClass);
-    this.element.querySelector("a").classList(this.menuClass);
-  }
+  bgColor = null;
+  comment = null;
+  refreshInterval = "1h";
+  scrollSpeed;
+  textColor = null;
+  titleTextColor = null;
+  url;
 
-  toSpec() {
-    return {
-      bgColor: this.bgColor,
-      textColor: this.textColor,
-      text: this.text,
-      scale: this.scale,
-      url: this.url,
-    }; 
-  }
-
-  show() {
-    var link = this.elemet.querySelector("a");
-    link.onclick = this.onClickCallback;
-    // Create a new div element
-    link.innerText = this.text;
-    if (this.bgColor != null) {
-      link.style.backgroundColor = this.bgColor;
-    }
-    if (this.textColor != null) {
-      link.style.color = this.textColor;
-    }
-  }
-
-  toSource() {
-    const template = createFromTemplate("config-menu-item");
-    setTemplateValue(template, "config-menu-item-text", this.text);
-    setTemplateValue(template, "config-menu-item-url", this.url)
-    setTemplateValue(template, "config-menu-item-bgcolor", this.bgColor, this.bgColor != null);
-    setTemplateValue(template, "config-menu-item-color", this.textColor, this.textColor != null);
-    return template;
-  }
-}
-
-
-class Menu {
-
-  constructor(id, menuItems, defaults) {
-    // Preppend the default options to the menu
-    this.#menuItemDefaults = defaults;
-    this.id = id;
-    this.items = [];
-    if (Array.isArray(menuItems)) {
-      menuItems.forEach((item) => {
-        this.items.push(new MenuItem(item, this.id, defaults));
-      });
-    }
-    this.element = document.getElementById(this.id);
-  }
-
-  append(itemObj) {
-    this.items.append(new MenuItem(itemObj, this.id, this.#menuItemDefaults));
-  }
-
-  filter(func) {
-    this.items.filter(func);
-  }
-  
-  find(func) {
-    return this.items.find(func);
-  }
-
-  findIndexById(itemId) {
-    if (typeof itemId == "string") {
-      return this.items.findIndex(this.get(itemId));
-    } else {
-      return this.items.findIndex((i) => i.id == itemId.id);
-    }
-  }
-
-  get(itemId) {
-    return this.items.find((item) => item.id == itemId);
-  }
-
-  map(func) {
-    return this.items.map(func);
-  }
-
-  push(item) {
-    this.items.push(item);
-  }
-
-  pop(item) {
-    return this.items.pop(this.findIndexById(item));
-  }
-
-  shift(itemObjs) {
-    return this.items.shift(itemObjs);
-  }
-
-  show() {
-    document.getElementById(this.id).childNodes.forEach((child) =>
-      document.getElementById(this.id).removeChild(child)
-    );
-    this.items.sort(sortCompareOrder).forEach((item, _) => item.show());
-  }
-
-  toSpec() {
-    return this.items.map((item) => item.toSpec());
-  }
-
-  toSource(template) {
-    this.items.forEach((item) => template.querySelector(`config-${this.id}-container`).appendChild(item.toSource()));
-  }
-
-  unshift(itemObjs) {
-    this.items.unshift(itemObjs);
-  }
-
-  #menuItemDefaults;
-}
-
-
-class Feed {
-
-  constructor(config, defaults) {
-    if (config === undefined) {
-      config = {};
-    } else if (typeof config == "string") {
-      config = {url: config};
-    } else if (typeof config.toSpec == "function") {
-      config = config.toSpec();
-    }
-    if (config.url === undefined) {
+  postConstructor() {
+    this.parentContainerId = "feeds-container";
+    this.templateId = "feed-item";
+    if (this.url === undefined) {
       console.error("Missing 'url' option in the following feed configuration", config);
     }
-    this.url = config.url;
-    this.comment = config.comment !== undefined ? config.comment : null;
-    this.refreshInterval = config.refreshInterval !== undefined ? config.refreshInterval : defaults.refreshInterval;
-    this.bgColor = config.bgColor !== undefined ? config.bgColor : defaults.bgtColor;
-    this.textColor = config.textColor !== undefined ? config.textColor : defaults.textColor;
-    this.titleTextColor = config.titleTextColor !== undefined ? config.titleTextColor : defaults.titleTextColor;
-    this.scrollSpeed = config.feedScrollSpeed !== undefined ? config.feedScrollSpeed : defaults.feedScrollSpeed;
-    this.id = generateId(this.url);
-    this.element = document.createElement("span");
-    this.element.id = this.id;
-    document.querySelector("#feed-ticker-container").appendChild(this.element);
-    this.#refreshTimeoutRef = setInterval((() => this.fetch()), parseInterval(this.refreshInterval));
+    super.postConstructor();
+    this.refreshTimeoutRef = setInterval((() => this.fetch()), parseInterval(this.refreshInterval));
     this.fetch();
+  }
+
+  insert() {
+    return;
   }
 
   toSpec() {
@@ -689,17 +462,6 @@ class Feed {
       titleTextColor: this.titleTextColor,
       url: this.url,
     }
-  }
-  
-  toSource() {
-    const template = createFromTemplate("config-feed-item");
-    setTemplateValue(template, "config-feed-item-url", this.url);
-    setTemplateValue(template, "config-feed-item-bgcolor", this.bgColor, this.bgColor != null);
-    setTemplateValue(template, "config-feed-item-text-color", this.textColor, this.textColor != null);
-    setTemplateValue(template, "config-feed-item-refresh-interval", this.refreshInterval);
-    setTemplateValue(template, "config-feed-item-title-text-color", this.titleTextColor, this.titleTextColor != null);
-    setTemplateValue(template, "config-feed-item-scroll-speed", this.scrollSpeed);
-    return template;
   }
 
   parse(feedXml) {
@@ -712,22 +474,17 @@ class Feed {
     if (feedXml.querySelector("entry")) {
       itemTag = "entry"; // Switch to Atom if "entry" is found
     }
-    // DEBUG: document.getElementById("debug").appendChild(feedXml.documentElement);
     const feedTitleText = feedXml.querySelector("channel > title, feed > title")?.textContent || "Unknown Feed";
     const lastUpdated = feedXml.querySelector("channel > lastBuildDate, feed > updated")?.textContent || "Unknown Time";
     const feedItems = feedXml.querySelectorAll(itemTag);
-    //console.debug(`Found ${feedItems.length} items in feed: ${this.url}`);
-    
-
     const feedText = [];
     const feedTitle = createFromTemplate("feed-title");
     if (this.titleTextColor != null) {
       feedTitle.style.color = this.titleTextColor;
     }
-    feedTitle.textContent = `${feedTitleText} - Last Updated: ${lastUpdated} -`;
+    feedTitle.children[0].textContent = `${feedTitleText} - Last Updated: ${lastUpdated} -`;
     feedElems.push(feedTitle);
     feedItems.forEach((item) => {
-      //console.debug("Feed.parse: loop items: item", item)
       // Handle both <link href="..."> and <link>...</link>
       const linkElement = item.querySelector("link");
       let link = "";
@@ -747,7 +504,6 @@ class Feed {
         feedItemAnchor.color = this.textColor;
       }
       const itemTitle = item.querySelector("title").textContent;
-      //console.debug("itemTitle", itemTitle);
       feedItemAnchor.textContent = itemTitle;
       feedElems.push(feedItem);
     });
@@ -756,16 +512,12 @@ class Feed {
       delimElem.color = this.textColor;
     }
     feedElems.push(delimElem);
-    // Update the content for this feed in the array
-    this.element.childNodes.forEach((child) => this.element.removeChild(child));
-    feedElems.forEach((item) => this.element.appendChild(item));
+    this.containerElem.childNodes.forEach((child) => this.containerElem.removeChild(child));
+    feedElems.forEach((item) => this.containerElem.appendChild(item));
     // Detect a failure to load all feeds
     //   Do this here because the fetching is asynchronous
     var globalEntries = 0;
-    document.getElementById("feed-ticker-container").childNodes.forEach((feed) => {
-      globalEntries += feed.childElementCount;
-    });
-    if (globalEntries < 1) {
+    if (document.getElementById(this.parentContainerId).childElementCount < 1) {
       document.getElementById("feed-ticker-error").classList.remove("hidden");
     } else {
       document.getElementById("feed-ticker-error").classList.add("hidden");
@@ -775,13 +527,12 @@ class Feed {
 
   updateSpeed() {
     // Calculate the width of the content and the container
-    const contentWidth = this.element.scrollWidth;
-    const containerWidth = this.element.parentElement.offsetWidth;
+    const contentWidth = this.containerElem.scrollWidth;
+    const containerWidth = this.containerElem.parentElement.offsetWidth;
     // Calculate the duration based on the content width
     const duration = (contentWidth * 2) / this.scrollSpeed;
-    //console.debug("scroll math: contentWidth, dashboard.feedScrollSpeed", contentWidth, this.scrollSpeed);
     // Update the CSS variable for the animation duration
-    this.element.style.setProperty("--ticker-duration", `${duration}s`);
+    this.containerElem.style.setProperty("--ticker-duration", `${duration}s`);
   }
 
   fetch() {
@@ -796,230 +547,370 @@ class Feed {
         console.error(`Error fetching feed from ${this.url}:`, error);
       });
   }
-
-
-  #refreshTimeoutRef;
 }
 
 
-class Source {
+class Feeds extends UrlCollection {
 
-  constructor(config, defaults) {
-    if (typeof config == "string") {
-      config = {url: config};
+  childClass = Feed;
+  id = "feeds-container";
+
+  fetch() {
+    this.children.forEach((child) => child.fetch());
+  }
+}
+
+
+class MenuItem extends Item {
+
+  bgColor = null;
+  comment = null;
+  order = -1;
+  scale = 1;
+  text = "No Text";
+  textColor = null;
+  url = "#";
+
+  postConstructor() {
+    this.parentContainerId = "user-menu-container";
+    this.templateId = "user-menu-item";
+    this.id = generateId(this.text + this.url);
+    // Allow for override
+    if (this.onClickCallback !== undefined) {
+      this.onClickCallback = function() {
+        document.getElementById("iframe-container").style.zIndex = 1;
+        document.getElementById("full-screen").style.display = "block";
+        document.getElementById("full-screen").src = this.url;
+        document.getElementById("full-screen").style.transform = `scale(${this.scale})`;
+      };
     }
-    if (config.url === undefined) {
-      console.error("Missing 'url' option in the following config.", config);
+    super.postConstructor();
+  }
+
+  populateTemplate(fragment) {
+    const link = fragment.querySelector("a");
+    link.onclick = this.onClickCallback;
+    link.textContent = this.text;
+    if (this.bgColor != null) {
+      link.style.backgroundColor = this.bgColor;
     }
-    this.url = config.url;
-    this.comment = config.comment !== undefined ? config.comment : null;
-    this.id = generateId(this.url);
-    this.refreshInterval = config.refreshInterval !== undefined ? config.refreshInterval : defaults.refreshInterval;
-    // Time to dwell on the source
-    this.rotateInterval = config.rotateInterval !== undefined ? config.rotateInterval : defaults.rotateInterval;
-    if (parseInterval(this.rotateInterval) <= parseInterval(this.refreshInterval)) {
-      this.refreshInterval = null;
+    if (this.textColor != null) {
+      link.style.color = this.textColor;
     }
-    this.iframe = config.iframe !== undefined ? config.iframe : defaults.iframe;
-    // Video mimetype override
-    this.mimetype = config.mimetype !== undefined ? config.mimetype : defaults.mimetype;
+    console.debug("fragment", fragment);
+    return fragment;
   }
 
   toSpec() {
     return {
+      bgColor: this.bgColor,
+      comment: this.comment,
+      order: this.order,
+      scale: this.scale,
+      text: this.text,
+      textColor: this.textColor,
       url: this.url,
-      refreshInterval: this.refreshInterval,
-      rotateInterval: this.rotateInterval,
-      iframe: this.iframe,
-      mimetype: this.mimetype,
-    };
+    }; 
   }
 
-  toSource() {
-    const template = createFromTemplate("config-tile-source");
-    setTemplateValue(template, "config-tile-source-url", this.url);
-    setTemplateValue(template, "config-tile-source-refresh-interval", this.refreshInterval, this.refreshInterval != null);
-    setTemplateValue(template, "config-tile-source-rotate-interval", this.rotateInterval, this.rotateInterval != null);
-    setTemplateValue(template, "config-tile-source-iframe", this.iframe, this.iframe);
-    setTemplateValue(template, "config-tile-source-mimetype", this.mimetype, this.mimetype != null);
-    return template;
+  show() {
+    var link = this.containerElem.querySelector("a");
+    link.onclick = this.onClickCallback;
+    link.textContent = this.text;
+    if (this.bgColor != null) {
+      link.style.backgroundColor = this.bgColor;
+    }
+    if (this.textColor != null) {
+      link.style.color = this.textColor;
+    }
   }
 }
 
-function setTemplateValue(template, key, value, unhide) {
-  console.debug("setTemplateValue(template, key, value, unhide): computed class", template, key, value, unhide, `.${key}-value`);
-  const valueElem = template.querySelector(`.${key}-value`);
-  console.debug("setTemplateValue: computed class, template elem", `.${key}-value`, valueElem);
-  valueElem.textContent = value;
-  if (unhide) {
-    if (template.querySelector(`.${key}-container`) != null) {
-      template.querySelector(`.${key}-container`).classList.remove("hidden");
-    }
-    if (valueElem.parent !== undefined) {
-      valueElem.parent.classList.remove("hidden");
-    }
-    template.querySelector(`.${key}-label`).classList.remove("hidden");
-    template.querySelector(`.${key}-value`).classList.remove("hidden");
+
+class Menu extends Collection {
+
+  childClass = MenuItem;
+  id = "user-menu-container";
+
+  insert() {
+    return;
+  }
+
+  show() {
+    document.getElementById("menu-container").style.display = "block";
+    document.getElementById("global-menu-icon").onclick = (() => this.hide());
+    this.children.forEach((child) => child.show());
+  }
+
+  hide() {
+    document.getElementById("menu-container").style.display = "none";
+    document.getElementById("global-menu-icon").onclick = (() => this.show());
   }
 }
 
-class Sources {
 
-  constructor(sources, defaults) {
-    this.#sourceDefaults = defaults;
-    this.sources = [];
-    if (typeof sources == "string") {
-      sources = [sources];
+class Source extends Item {
+
+  comment = null;
+  iframe = false;
+  mimetype = null;
+  refreshInterval = "5m";
+  rotateInterval = "5m";
+  url;
+
+  postConstructor() {
+    this.parentContainerId = "tiles-container";
+    this.templateId = "source-item";
+    if (this.url === undefined) {
+      console.error("Missing 'url' option in the following config.", this.args.config);
     }
-    if (Array.isArray(sources)) {
-      sources.forEach((source) => {
-        this.sources.push(new Source(source, this.#sourceDefaults));
-      });
+    if (parseInterval(this.rotateInterval) <= parseInterval(this.refreshInterval)) {
+      this.refreshInterval = null;
     }
-    this.current = this.sources[this.#currentIndex];
+    super.postConstructor();
   }
 
-  get length() {
-    return this.sources.length;
-  }
-
-  filter(func) {
-    this.sources.filter(func);
-  }
-  
-  find(func) {
-    return this.sources.find(func);
-  }
-
-  findIndexById(sourceId) {
-    if (typeof sourceId == "string") {
-      return this.sources.findIndex(this.get(sourceId));
-    } else {
-      // Assume source is another Source
-      return this.sources.findIndex((item) => source.id == sourceId.id);
-    }
-  }
-
-  get(sourceId) {
-    return this.sources.find((source) => source.id == sourceId);
-  }
-
-  map(func) {
-    return this.sources.map(func);
-  }
-
-  next() {
-    console.debug("Tile.next", this.#currentIndex, this.sources.length);
-    if (this.#currentIndex >= this.sources.length-1) {
-      this.#currentIndex = 0;
-    } else {
-      this.#currentIndex += 1;
-    }
-    this.current = this.sources[this.#currentIndex];
-    return this.current;
-  }
-
-  pop(sourceId) {
-    return this.sources.pop(this.findIndexById(sourceId));
-  }
-
-  push(item) {
-    this.sources.push(item);
-  }
-
-  shift(sources) {
-    return this.sources.shift(sources);
+  insert() {
+    return;
   }
 
   toSpec() {
-    return this.sources.map((source) => source.toSpec());
+    return {
+      comment: this.comment,
+      iframe: this.iframe,
+      mimetype: this.mimetype,
+      refreshInterval: this.refreshInterval,
+      rotateInterval: this.rotateInterval,
+      url: this.url,
+    };
   }
-
-  toSource(template) {
-    const sources = document.createElement("div");
-    sources.classList.add("config-tile-sources-container");
-    this.sources.forEach((source) => sources.appendChild(source.toSource()));
-    template.querySelector(".config-tile-sources-container").replaceWith(sources);
-  }
-
-  unshift(sources) {
-    this.sources.unshift(sources);
-  }
-
-  #currentIndex = 0;
-  #sourceDefaults;
 }
 
 
-class Tile {
+class Sources extends UrlCollection {
 
-  constructor(config, defaults) {
-    if (config.toSpec !== undefined) {
-      config = config.toSpec();
-    }
-    this.#config = config;
-    this.comment = config.comment !== undefined ? config.comment : null;
-    this.rotateInterval = config.rotate !== undefined ? config.rotate : defaults.rotateInterval;
-    this.refreshInterval = config.refresh !== undefined ? config.refresh : defaults.refreshInterval;
+  childClass = Source;
+  currentIndex = 0;
 
-    this.fit = config.fit !== undefined ? config.fit : defaults.fit;
-    this.scale = config.scale !== undefined ? config.scale : defaults.scale;
-    this.#title = config.title !== undefined ? config.title : defaults.title;
-
-    if (config.sources === undefined || config.sources == null || config.sources == "") {
-      console.warn("Missing src option in config", config);
-    }
-    if (config.sources.length < 1) {
-      console.error("Missing URLs in src option in config", config);
-    }
-    console.debug("Tile.constructor: config", config);
-    this.sources = new Sources(config.sources, this.#sourceDefaults());
-    this.id = `tile-${generateId(this.sources.current.url)}`;
-
-    this.videoId = "video-" + this.id;
-    this.imageId = "image-" + this.id;
-    this.iframeId = "iframe-" + this.id;
-    this.fragment = this.#populateTemplate();
-    this.fragment.id = this.id;
+  get current() {
+    return this.children[this.currentIndex];
   }
 
-  get element() {
-    return document.getElementById(this.id);
+  insert() {
+    return;
+  }
+
+  next() {
+    if (this.currentIndex >= this.children.length-1) {
+      this.currentIndex = 0;
+    } else {
+      this.currentIndex += 1;
+    }
+    return this.current;
+  }
+}
+
+
+class Tile extends Item {
+
+  comment = null;
+  fit = null;
+  iframe = false;
+  refreshInterval = "5m";
+  rotateInterval = "5m";
+  scale = 1;
+  title = null;
+
+  static create(spec, defaults) {
+    //console.debug("Tile.create: spec", spec);
+    if (typeof spec == "string") {
+      spec = {sources: [{url: spec}]};
+    } else if (Array.isArray(spec)){
+      spec = {
+        sources: spec.map((s) => {
+          if (typeof s == "string") {
+            return {url: s};
+          }
+          if (s instanceof Source) {
+            return s.toSpec();
+          }
+          return s;
+        })
+      };
+    }
+    return super.create(spec, defaults);
+  }
+
+  postConstructor() {
+    this.parentContainerId = "tiles-container";
+    this.templateId = "tile-item";
+    //console.debug("Tile.postConstructor: this.sources", this.sources);
+    if (this.sources === undefined || this.sources == null || this.sources == "") {
+      console.warn("Missing src option in config", this._spec);
+    }
+    if (this.sources.length < 1) {
+      console.error("Missing URLs in src option in config", this._spec);
+    }
+    this.sources = Sources.create(this.sources, this.sourceDefaults());
+    this.id = `tile-${generateId(this.sources.current.url)}`;
+    this.videoId = `video-${this.id}`;
+    this.imageId = `image-${this.id}`;
+    this.iframeId = `iframe-${this.id}`;
+    this.menuId = `menu-${this.id}`;
+    this.menuIconId = `menu-icon-${this.id}`;
+    super.postConstructor();
+    this.insertMenu();
+  }
+
+  get imageElem() {
+    return document.getElementById(this.imageId);
+  }
+
+  get iframeElem() {
+    return document.getElementById(this.iframeId);
+  }
+
+  get menuElem() {
+    return document.getElementById(this.menuId);
+  }
+
+  get menuIconElem() {
+    return document.getElementById(this.menuIconId);
   }
 
   get titleElem() {
-    return this.element.querySelector(".tile-title");
+    return this.containerElem.querySelector(".tile-title");
   }
 
-  get video() {
+  get videoElem() {
     return document.getElementById(this.videoId);
   }
 
   get videoSource() {
-    return this.video.querySelector("source");
+    return this.videoElem.querySelector("source");
   }
 
-  get image() {
-    return document.getElementById(this.imageId);
+  focus() {
+    const clone = this.containerElem.cloneNode(true);
+    const focusedContainer = document.getElementById("focused-container");
+    focusedContainer.appendChild(clone);
+    // Stop rotation and refreshes
+    window.stop();
+    stopTiles();
+    focusedContainer.style.display = "block";
+    focusedContainer.style.zIndex = 5;  // restore default from dashboard.css
+    focusedContainer.oncontextmenu = ((event) => {
+      event.preventDefault();
+      this.rotate();
+    });
   }
 
-  get iframe() {
-    return document.getElementById(this.iframeId);
+  getFocusCallback() {
+    function showFocused(event) {
+      event.preventDefault();
+      const tile = dashboard.tiles.get(event.target.id);
+      //console.debug("Tile.showFocusedCallback.showFocused: start: this.id", this.id);
+      const focusedContainer = document.getElementById("focused-container");
+      focusedContainer.appendChild(tile.containerElem);
+      // Stop rotation and refreshes
+      window.stop();
+      stopTiles();
+      focusedContainer.style.display = "block";
+      focusedContainer.style.zIndex = 5;  // restore default from dashboard.css
+      focusedContainer.oncontextmenu = ((e) => {
+        //console.debug("Tile.showFocusedCallback.showFocused.focusedContainer.oncontextmenu: start", this.id);
+        e.preventDefault();
+        tile.rotate();
+      });
+    }
+    return showFocused;
+  }
+
+  getRefreshCallback() {
+    function refresh(event) {
+      event.preventDefault();
+      const tile = dashboard.tiles.get(event.target.id);
+      tile.refresh();
+    }
+    return refresh;
+  }
+
+  getRotateCallback() {
+    function rotate(event) {
+      event.preventDefault();
+      const tile = dashboard.tiles.get(event.target.id);
+      tile.rotate();
+    }
+    return rotate;
+  }
+
+  getTileMenuCallback() {
+    function showMenu(event) {
+      event.preventDefault();
+      const tile = dashboard.tiles.get(event.target.id);
+      tile.showMenu();
+    }
+    return showMenu;
+  }
+
+  getTitle() {
+    if (this.sources.current.title != null && this.sources.current.title != "" && this.sources.current.title !== undefined) {
+      return this.sources.current.title;
+    } else if (this.title != null && this.title != "" && this.title !== undefined) {
+      return this.title;
+    } 
+    return null;
+  }
+
+  hideMenu() {
+    this.menuIconElem.onclick = ((e) => {
+      dashboard.tiles.get(e.target.id).showMenu();
+    });
+    this.menuElem.style.display = "none";
+  }
+
+  insertMenu() {
+    //console.debug("Tile.insertMenu: this", this);
+    document.querySelector(`#${this.id}`).querySelector(`.tile-menu`).id = this.menuId;
+    const refreshButton = this.menuElem.querySelector(".tile-refresh-button");
+    refreshButton.id = `refresh-button-${this.id}`;
+    refreshButton.onclick = ((e) => {
+      e.preventDefault();
+      this.hideMenu();
+      this.refresh();
+    });
+    const rotateButton = this.menuElem.querySelector(".tile-rotate-button");
+    rotateButton.id = `rotate-button-${this.id}`;
+    rotateButton.onclick = ((e) => {
+      e.preventDefault();
+      this.hideMenu();
+      this.rotate();
+    });
+    const focusButton = this.menuElem.querySelector(".tile-focus-button");
+    focusButton.id = `focus-button-${this.id}`;
+    focusButton.onclick = ((e) => {
+      e.preventDefault();
+      this.hideMenu();
+      dashboard.tiles.focus(this.id);
+    });
+    const cancelButton = this.menuElem.querySelector(".tile-cancel-button");
+    cancelButton.id = `cancel-button-${this.id}`;
+    cancelButton.onclick = ((e) => {
+      e.preventDefault();
+      this.hideMenu();
+      this.refresh();
+    });
+    this.hideMenu();
   }
 
   idEquals(id) {
-    if (this.id == id) {
+    const tileId = `tile${id.split("tile")[1]}`;
+    //console.debug("tileId", tileId);
+    if (this.id == tileId) {
+      //console.debug("id == tileId", tileId);
       return true;
     }
-    if (this.imageId == id) {
-      return true;
-    }
-    if (this.iframeId == id) {
-      return true;
-    }
-    if (this.videoId == id) {
-      return true;
-    }
+    //console.debug("id != any", id);
     return false;
   }
 
@@ -1027,83 +918,104 @@ class Tile {
     return this.sources.current.iframe;
   }
 
+  populateTemplate(fragment) {
+    const title = this.fragment.querySelector(".tile-title");
+    if (this.getTitle() == null) {
+      title.style.display = "none";
+    } else {
+      title.style.display = "block";
+      title.innerHTML = this.getTitle();
+    }
+    //console.debug("getTitle, title", this.getTitle(), title);
+    const iframe = this.fragment.querySelector("iframe");
+    iframe.id = this.iframeId;
+    const image = this.fragment.querySelector("img");
+    image.id = this.imageId;
+    image.oncontextmenu = this.getRotateCallback();  // global function
+    image.ondblclick = this.getFocusCallback();  // global function
+    const menuIcon = this.fragment.querySelector(".tile-menu-icon");
+    menuIcon.onclick = this.getTileMenuCallback();
+    menuIcon.id = this.menuIconId;
+    const video = this.fragment.querySelector("video");
+    video.id = this.videoId;
+    return fragment;
+  }
+
+  setCallbacks(fragment) {
+    fragment.ondbclick = this.getRotateCallback();
+    fragment.oncontextmenu = this.getTileMenuCallback();
+    fragment.querySelector(".tile-menu-icon").onclick = this.getTileMenuCallback();
+  }
+
   isVideo() {
     return videoExtensions.some((ext) => this.sources.current.url.includes(ext));
   }
 
-  show() {
-    console.debug("Tile.show: tile", this);
-    if (this.isVideo()) {
-      console.debug("Tile.show: is video");
-      this.showVideo();
-    } else if (this.isFrame()) {
-      console.debug("Tile.show: is iframe");
-      this.showIframe();
-    } else {
-      // Is image
-      console.debug("Tile.show: is image");
-      this.showImage();
-    }
+  next() {
+    this.sources.next();
+    return this;
   }
 
   refresh() {
-    console.debug("Tile.refresh: tile", this);
+    //console.debug("Tile.refresh: tile", this);
     this.show();
-    this.#clearRefreshTimeout();
-    this.#setRefreshTimeout();
-  }
-
-  insert() {
-    if (this.element == null) {
-      const container = document.getElementById("tiles");
-      this.fragment.id = this.id;
-      this.fragment.ondbclick = rotate;
-      this.fragment.oncontextmenu = refresh;
-      container.appendChild(this.fragment);
-    } else {
-      this.element.replaceWith(this.fragment);
-      this.element.ondbclick = rotate;
-      this.element.oncontextmenu = refresh;
+    if (!this.isIframe && !this.isVideo) {
+      wheelzoom(this.imageElem);
     }
+    this.clearRefreshTimeout();
+    this.setRefreshTimeout();
   }
 
   rotate() {
-    console.debug("Tile.rotate: tile", this);
-    this.#clearRotateTimeout();
+    //console.debug("Tile.rotate: tile", this);
+    this.clearRotateTimeout();
     if (this.sources.length > 1) {
       this.next();
-      this.#setRotateTimeout();
+      this.setTitle();
+      this.setRotateTimeout();
     }
     this.refresh();
+  }
+
+  show() {
+    if (this.isVideo()) {
+      this.showVideo();
+    } else if (this.isFrame()) {
+      this.showIframe();
+    } else {
+      // Is image
+      this.showImage();
+    }
   }
 
   showIframe(url) {
     if (url === undefined) {
       url = this.sources.current.url;
     }
-    this.iframe.classList.remove("hidden");
-    this.iframe.src = url;
+    this.iframeElem.classList.remove("hidden");
+    this.iframeElem.src = url;
     if (this.scale !== null) {
-      this.iframe.style.transform = `scale(${this.scale})`;
+      this.iframeElem.style.transform = `scale(${this.scale})`;
     }
-    this.iframe.style.zIndex = 0;
-    this.image.classList.add("hidden");
-    this.video.classList.add("hidden");
+    this.iframeElem.style.zIndex = 0;
+    this.imageElem.classList.add("hidden");
+    this.videoElem.classList.add("hidden");
   }
 
   showImage(url) {
     if (url === undefined) {
       url = this.sources.current.url;
     }
-    console.debug("Tile.showImage: url", url);
-    this.image.classList.remove("hidden");
-    this.image.src = getImageURL(url);
-    this.image.onerror = function () {
+    this.imageElem.classList.remove("hidden");
+    // Image cache prevention
+    // Check if the image URL already include parameters, then avoid the random timestamp
+    this.imageElem.src = url.includes("?") ? url : url + "?_=" + Date.now();
+    this.imageElem.onerror = function () {
       text = "Failed to load image";
       if (url.includes("?")) {
         // Retry without passing variables first to see if fixes the error
         console.log("Trying without caching prevention");
-        this.image.src = url.split("?")[0];
+        this.imageElem.src = url.split("?")[0];
       } else {
         el = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="330">
           <g>
@@ -1112,52 +1024,70 @@ class Tile {
               </text>
               </g>
               </svg>`;
-        this.image.src = "data:image/svg+xml;base64," + window.btoa(el);
+        this.imageElem.src = "data:image/svg+xml;base64," + window.btoa(el);
       }
     };
-    //wheelzoom(this.image);
-    this.iframe.classList.add("hidden");
-    this.video.classList.add("hidden");
+    this.iframeElem.classList.add("hidden");
+    this.videoElem.classList.add("hidden");
+  }
+
+  showMenu() {
+    this.menuIconElem.onclick = ((e) => {
+      dashboard.tiles.get(e.target.id).hideMenu();
+    });
+    this.menuElem.style.display = "grid";
   }
 
   showVideo(url) {
     if (url === undefined) {
       url = this.sources.current.url;
     }
-    this.video.classList.remove("hidden");
-    this.videoSource.src = getImageURL(url);
+    this.videoElem.classList.remove("hidden");
+    this.videoSource.src = url;
     if (this.sources.current.mimetype == null) {
-      this.videoSource.type = getVideoType(url);
+      if (url.includes(".mp4")) {
+        this.videoSource.type = "video/mp4";
+      } else if (url.includes(".webm")) {
+        this.videoSource.type = "video/webm";
+      } else if (url.includes(".ogg") || url.includes(".ogv")) {
+        this.videoSource.type = "video/ogg";
+      } else {
+        console.error("Could not determine mimetype for url", url);
+      }
     } else {
       this.videoSource.type = this.sources.current.mimetype;
     }
-    this.iframe.classList.add("hidden");
-    this.image.classList.add("hidden");
+    this.iframeElem.classList.add("hidden");
+    this.imageElem.classList.add("hidden");
   }
 
   start() {
-    this.insert();
     this.show();
-    this.#setRefreshTimeout();
-    this.#setRotateTimeout();
+    this.setRefreshTimeout();
+    this.setRotateTimeout();
   }
 
   stop() {
-    this.insert()
-    this.#clearRefreshTimeout();
-    this.#clearRotateTimeout();
+    this.insert();
+    this.clearRefreshTimeout();
+    this.clearRotateTimeout();
   }
 
-  next() {
-    this.sources.next();
-    return this;
+  setTitle() {
+    const title = this.getTitle();
+    this.titleElem.innerHTML = title;
+    if (title == null) {
+      this.titleElem.style.display = "none";
+    } else {
+      this.titleElem.style.display = "block";
+    }
   }
 
   toSpec() {
     return {
       title: this.title,
       fit: this.fit,
-      iframe: this.#config.iframe,
+      iframe: this.iframe,
       refresh: this.refreshInterval,
       rotate: this.rotateInterval,
       scale: this.scale,
@@ -1165,70 +1095,36 @@ class Tile {
     };
   }
 
-  toSource(template) {
-    const container = template.querySelector(".config-tiles-container");
-    const tileTemplate = createFromTemplate("config-tile");
-    setTemplateValue(tileTemplate, "config-tile-title", this.#title, this.#title != null);
-    this.sources.toSource(tileTemplate);
-    console.debug("Tile.toSource: tileElem", tileTemplate);
-    template.querySelector(".config-tiles-container").appendChild(tileTemplate);
-  }
-
-  #config;
-  #refreshTimeoutRef;
-  #rotateTimeoutRef;
-  #title;
-
-  #clearRefreshTimeout() {
-    if (this.#refreshTimeoutRef !== undefined) {
-      clearTimeout(this.#refreshTimeoutRef);
-      this.#refreshTimeoutRef = undefined;
+  clearRefreshTimeout() {
+    if (this.refreshTimeoutRef !== undefined) {
+      clearTimeout(this.refreshTimeoutRef);
+      this.refreshTimeoutRef = undefined;
     }
   }
 
-  #clearRotateTimeout() {
-    if (this.#rotateTimeoutRef !== undefined) {
-      clearTimeout(this.#rotateTimeoutRef);
-      this.#rotateTimeoutRef = undefined;
+  clearRotateTimeout() {
+    if (this.rotateTimeoutRef !== undefined) {
+      clearTimeout(this.rotateTimeoutRef);
+      this.rotateTimeoutRef = undefined;
     }
   }
 
-  #populateTemplate() {
-    const container = createFromTemplate("tile-container");
-    console.debug("container", container);
-    container.id = this.id;
-    const titleElem = container.querySelector(".tile-title");
-    titleElem.innerHTML = this.#title;
-
-    const video = container.querySelector("video");
-    video.id = this.videoId;
-
-    const image = container.querySelector("img");
-    image.id = this.imageId;
-    image.oncontextmenu = rotate;  // global function
-    image.ondblclick = focusImage;  // global function
-    
-    const iframe = container.querySelector("iframe");
-    iframe.id = this.iframeId;
-    return container;
-  }
-
-  #setRefreshTimeout() {
+  setRefreshTimeout() {
     if (this.sources.current.refreshInterval != null && this.sources.current.refreshInterval > 0) {
-      this.#refreshTimeoutRef = setInterval(() => refreshTileById(this.id), parseInterval(this.refreshInterval));
+      this.refreshTimeoutRef = setInterval(() => this.getRefreshCallback(), parseInterval(this.refreshInterval));
     }
   }
 
-  #setRotateTimeout() {
+  setRotateTimeout() {
     if (this.sources.current.rotateInterval != null && this.sources.current.rotateInterval > 0) {
-      this.#rotateTimeoutRef = setInterval(() => rotateTileById(this.id), parseInterval(this.rotateInterval));
+      this.rotateTimeoutRef = setInterval(() => this.getRotateCallback(), parseInterval(this.rotateInterval));
     }
   }
 
-  #sourceDefaults() {
+  sourceDefaults() {
     return {
-      iframe: this.#config.iframe !== undefined ? this.#config.iframe : false,
       fit: this.fit,
+      iframe: this.iframe,
       mimetype: this.mimetype,
       refreshInterval: this.refreshInterval,
       rotateInterval: this.rotateInterval,
@@ -1237,91 +1133,252 @@ class Tile {
   }
 }
 
-class Tiles {
+class FocusedTile extends Tile {
 
-  constructor(tiles, defaults) {
-    this.#tileDefaults = defaults;
-    this.tiles = [];
-    if (Array.isArray(tiles)) {
-      tiles.forEach((tile) => {
-        this.tiles.push(new Tile(tile, this.#tileDefaults));
-      });
+  tile;
+
+  postConstructor() {
+    this.parentContainerId = "focused-container";
+    this.templateId = "focused-tile";
+    this.sources = this.tile.sources;
+    this.id = `tile-${generateId(this.sources.current.url)}`;
+    this.videoId = `video-${this.id}`;
+    this.imageId = `image-${this.id}`;
+    this.iframeId = `iframe-${this.id}`;
+    this.menuId = `menu-${this.id}`;
+    this.menuIconId = `menu-icon-${this.id}`;
+    this.insert();
+    this.insertMenu();
+    document.getElementById(this.parentContainerId).style.display = "block";
+    super.show();
+  }
+
+  hideMenu() {
+    this.menuIconElem.onclick = ((e) => {
+      dashboard.tiles.focused.showMenu();
+    });
+    this.menuElem.style.display = "none";
+  }
+
+  insertMenu() {
+    document.querySelector(`#${this.id}`).querySelector(".tile-menu").id = this.menuId;
+    const refreshButton = this.menuElem.querySelector(".tile-refresh-button");
+    refreshButton.id = `refresh-button-${this.id}`;
+    refreshButton.onclick = ((e) => {
+      e.preventDefault();
+      this.hideMenu();
+      this.refresh();
+    });
+    const rotateButton = this.menuElem.querySelector(".tile-rotate-button");
+    rotateButton.id = `rotate-button-${this.id}`;
+    rotateButton.onclick = ((e) => {
+      e.preventDefault();
+      this.hideMenu();
+      this.rotate();
+    });
+    const focusButton = this.menuElem.querySelector(".tile-focus-button");
+    console.debug("this.menuElem", this.menuElem, focusButton);
+    focusButton.id = `focus-button-${this.id}`;
+    focusButton.onclick = ((e) => {
+      e.preventDefault();
+      this.hideMenu();
+      dashboard.tiles.defocus();
+    });
+    const cancelButton = this.menuElem.querySelector(".tile-cancel-button");
+    cancelButton.id = `cancel-button-${this.id}`;
+    cancelButton.onclick = ((e) => {
+      e.preventDefault();
+      this.hideMenu();
+      this.refresh();
+    });
+    this.hideMenu();
+  }
+
+  getRefreshCallback() {
+    function refresh(event) {
+      event.preventDefault();
+      dashboard.tiles.focused.refresh();
     }
-    this.start();
+    return refresh;
   }
 
-  get element() {
-    return document.querySelector("#tiles");
+  getRotateCallback() {
+    function rotate(event) {
+      event.preventDefault();
+      dashboard.tiles.focused.rotate();
+    }
+    return rotate;
   }
 
-  get length() {
-    return this.tiles.length;
+  getTileMenuCallback() {
+    function showMenu(event) {
+      event.preventDefault();
+      dashboard.tiles.focused.showMenu();
+    }
+    return showMenu;
   }
 
-  find(func) {
-    return this.tiles.find(func);
+  hide() {
+    this.containerElem.remove();
+    document.getElementById(this.parentContainerId).style.display = "none";
+  }
+}
+
+
+class Tiles extends Collection {
+
+  childClass = Tile;
+
+  postConstructor() {
+    this.id = "tiles-container";
+    this.focused = null;
+    super.postConstructor();
   }
 
-  getTileById(tileId) {
-    return this.tiles.find((tile) => tile.id == tileId);
+  focus(tileId) {
+    this.focused = FocusedTile.create({tile: this.get(tileId)});
+    this.focused.show();
   }
 
-  findIndexById(tileId) {
-    console.debug("Tiles.findIndexById: this", this);
-    if (typeof tileId == "string") {
-      return this.tiles.findIndex(this.getTileById(tileId));
-    } else {
-      // Assume tile is another tile
-      return this.tiles.findIndex((item) => tile.id == tileId.id);
+  defocus() {
+    if (this.focused != null) {
+      this.focused.hide();
     }
   }
 
-  map(func) {
-    return this.tiles.map(func);
+  get(tileId) {
+    if (tileId instanceof this.childClass) {
+      tileId = tileId.id;
+    }
+    const child = this.children.find((child) => child.idEquals(tileId));
+    //console.debug("Tiles.get(tileId): child", tileId, child);
+    return child;
   }
 
-  pop(tileId) {
-    return this.tiles.pop(this.findIndexById(tileId));
-  }
-
-  push(item) {
-    this.tiles.push(item);
-  }
-
-  shift(tiles) {
-    return this.tiles.shift(tiles);
+  insert() {
+    return;
   }
 
   show() {
-    this.tiles.forEach((tile) => tile.show());
+    this.children.forEach((tile) => tile.show());
   }
 
   start() {
-    this.tiles.forEach((tile) => {
-      document.getElementById("tiles").appendChild(tile.fragment);
-      tile.start();
-    });
+    this.children.forEach((tile) => tile.start());
   }
 
   stop() {
-    this.tiles.forEach((tile) => {
-      tile.stop();
-    });
+    this.children.forEach((tile) => tile.stop());
   }
 
   toSpec() {
-    return this.tiles.map((tile) => tile.toSpec());
+    return this.children.map((tile) => tile.toSpec());
   }
-
-  toSource(template) {
-    this.tiles.forEach((tile) => tile.toSource(template));
-    console.debug("Tiles.toSource: template", template);
-  }
-
-  unshift(tiles) {
-    this.tiles.unshift(tiles);
-  }
-
-  #tileDefaults;
 }
 
+
+class TopBarPart extends Item {
+
+  text = null;
+  textColor = null;
+  bgColor = null;
+
+  insert() {
+    return;
+  }
+
+  getText() {
+    return this.text;
+  }
+
+  // Show the TopBar part
+  show() {
+    if (this.bgColor != null) {
+      this.containerElem.style.backgroudColor = this.bgColor;
+    }
+    if (this.textColor != null) {
+      this.containerElem.style.color = this.textColor;
+    }
+    if (this.text != null) {
+      this.containerElem.innerHTML = this.text;
+    } else {
+      this.containerElem.innerHTML = this.getText();
+    }
+  }
+}
+
+
+class TopBarLeft extends TopBarPart {
+
+  text = null;
+  textColor = null;
+  bgColor = null;
+
+  id = "top-bar-left"; 
+
+  getText() {
+    sharedTime.update();
+    const localDate = sharedTime.now.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+    });
+    const localTime = sharedTime.now.toLocaleTimeString("en-US", {
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      timeZoneName: "short",
+    });
+    return `${localDate} - ${localTime}`;
+  }
+}
+
+
+class TopBarCenter extends TopBarPart {
+
+  text = "CALLSIGN - Locator";
+  textColor = null;
+  bgColor = null;
+
+  id = "top-bar-center"; 
+}
+
+
+class TopBarRight extends TopBarPart {
+
+  text = null;
+  textColor = null;
+  bgColor = null;
+
+  id = "top-bar-right"; 
+
+  getText() {
+    sharedTime.update();
+    const utcDate = sharedTime.now.toISOString().slice(0, 10);
+    const utcTime = sharedTime.now.toISOString().slice(11, 19) + " UTC";
+    return `${utcDate} ${utcTime}`;
+  }
+}
+
+
+class TopBar extends Item {
+
+  left;
+  center;
+  right;
+  
+  id = "top-bar";
+
+  postConstructor() {
+    this.left = TopBarLeft.create(this.left);
+    this.center = TopBarCenter.create(this.center);
+    this.right = TopBarRight.create(this.right);
+  }
+
+  show() {
+    this.left.show();
+    this.center.show();
+    this.right.show();
+  }
+}

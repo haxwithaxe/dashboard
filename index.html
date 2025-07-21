@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta http-equiv="Cache" content="no-cache" />
+    <meta http-equiv="Pragma-Control" content="no-cache" />
+    <meta http-equiv="Cache-directive" content="no-cache" />
+    <meta http-equiv="Pragma-directive" content="no-cache" />
+    <meta http-equiv="Cache-Control" content="no-cache" />
+    <meta http-equiv="Pragma-directive: no-cache" />
+    <meta http-equiv="Cache-directive: no-cache" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="VA3HDL Ham Radio Dashboard" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css?family=Victor Mono|Audiowide|Bebas Neue"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <title>Dashboard</title>
+    <link href="dashboard.css" rel="stylesheet"></link>
+    <script src="wheelzoom.js"></script>
+    <template id="error-block">
+      <div class="error-block">
+      </div>
+    </template>
+    <template id="error-message">
+      <div class="error error-message"></div>
+    </template>
+    <template id="feed-delim">
+      <span class="feed-item" >-</a>
+    </template>
+    <template id="feed-item">
+      <span class="feed-item">
+        <a class="feed-item" target="_blank" href="#">No feed item title</a>
+      </span>
+    </template>
+    <template id="feed-title">
+      <span class="feed-title">No feed title</span>
+    </template>
+    <template id="focused-tile">
+      <div class="focused-tile-container">
+        <div class="tile-menu-container">
+          <a class="tile-menu-icon" href="#">&vellip;</a>
+          <div class="tile-menu">
+            <div class="tile-menu-item">
+              <a class="tile-refresh-button button" href="#">Refresh</a>
+            </div>
+            <div class="tile-menu-item">
+              <a class="tile-rotate-button button" href="#">Rotate</a>
+            </div>
+            <div class="tile-menu-item">
+              <a class="tile-focus-button button" href="#">Close</a>
+            </div>
+            <div class="tile-menu-item">
+              <a class="tile-cancel-button button" href="#">Cancel</a>
+            </div>
+          </div>
+        </div>
+        <div class="tile-title"></div>
+        <iframe class="focused-tile-iframe hidden"></iframe>
+        <img class="focused-tile-image hidden"></img>
+        <video class="focused-tile-video media hidden" controls="true" autoplay="true" loop="true">
+          <source></source>
+        </video>
+      </div>
+    </template>
+    <template id="tile-item">
+      <div class="tile-container">
+        <div class="tile-menu-container">
+          <a class="tile-menu-icon" href="#">&vellip;</a>
+          <div class="tile-menu">
+            <div class="tile-menu-item">
+              <a class="tile-refresh-button button" href="#">Refresh</a>
+            </div>
+            <div class="tile-menu-item">
+              <a class="tile-rotate-button button" href="#">Rotate</a>
+            </div>
+            <div class="tile-menu-item">
+              <a class="tile-focus-button button" href="#">Fullscreen</a>
+            </div>
+            <div class="tile-menu-item">
+              <a class="tile-cancel-button button" href="#">Cancel</a>
+            </div>
+          </div>
+        </div>
+        <div class="tile-title"></div>
+        <iframe class="tile-iframe hidden"></iframe>
+        <img class="tile-image hidden"></img>
+        <video class="tile-video media hidden" controls="true" autoplay="true" loop="true">
+          <source></source>
+        </video>
+      </div>
+    </template>
+    <template id="user-menu-item">
+      <div class="menu-item">
+        <a class="menu-item" href="#"></a>
+      </div>
+    </template>
+    <script src="config.js"></script>
+    <script src="lib.js"></script>
+  </head>
+  <body>
+
+    <div id="iframe-container" class="iframe-container">
+      <iframe id="full-screen" class="full-screen" src="" title="Zoom"></iframe>
+    </div>
+
+    <div id="focused-container" class="focused-container">
+    </div>
+
+    <div id="menu-container" class="menu-container">
+      <div id="menu" class="menu">
+        <div id="back-button" class="menu-item menu-item-left">
+          <a class="menu-item menu-item-left" href="#" >Back</a>
+        </div>
+        <div id="refresh-button" class="menu-item menu-item-left">
+          <a class="menu-item menu-item-left" href="#" >Refresh</a>
+        </div>
+        <div id="sources-button" class="menu-item menu-item-left">
+          <a class="menu-item menu-item-left" href="#" >Sources</a>
+        </div>
+        <div id="help-button" class="menu-item menu-item-left">
+          <a class="menu-item menu-item-left" href="#" >Help</a>
+        </div>
+        <div id="update-button" class="menu-item menu-item-left hidden">
+          <a class="menu-item menu-item-left" href="#" >Update</a>
+        </div>
+      </div>
+      <div id="user-menu-container" class="user-menu menu">
+      </div>
+    </div>
+
+    <div id="default-frame" class="default-frame">
+      <div class="error-block hidden" id="global-error"></div>
+      <div id="top-bar-container" class="top-bar">
+        <div class="top-bar-button"><a id="top-bar-back-button" href="#">&lt;</a></div>
+        <div id="top-bar-left" class="top-bar-item"></div>
+        <div id="top-bar-center" class="top-bar-item"></div>
+        <div id="top-bar-right" class="top-bar-item"></div>
+        <div id="global-menu-icon-container" class="top-bar-button"><a id="global-menu-icon" href="#">&#9776;</a></div>
+      </div>
+      <div id="tiles-container" class="dashboard">
+      </div>
+      <div class="feed-ticker" id="feed-ticker">
+        <span class="feed-ticker-content feed-ticker-error hidden" id="feed-ticker-error">Failed to load feeds.</span>
+        <div class="feeds-container" id="feeds-container"></div>
+      </div>
+    </div>
+
+    <div id="overlay" class="overlay">
+      <div class="overlay-content">
+        <div class="config-title">
+          <b>Full config.js file: </b>
+          <a href="config.js" target="_blank" style="color: white">
+            (Open in new tab)
+          </a>
+          <p></p>
+          <div id="config-display-container">
+            <div id="config-display"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+  <script src="main.js"></script>
+</html>
