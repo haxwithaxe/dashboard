@@ -918,7 +918,6 @@ class Tile extends Item {
     function showFocused(event) {
       event.preventDefault();
       const tile = dashboard.tiles.get(event.target.id);
-      //console.debug("Tile.showFocusedCallback.showFocused: start: this.id", this.id);
       const focusedContainer = document.getElementById("focused-container");
       focusedContainer.appendChild(tile.containerElem);
       // Stop rotation and refreshes
@@ -927,7 +926,6 @@ class Tile extends Item {
       focusedContainer.style.display = "block";
       focusedContainer.style.zIndex = 5;  // restore default from dashboard.css
       focusedContainer.oncontextmenu = ((e) => {
-        //console.debug("Tile.showFocusedCallback.showFocused.focusedContainer.oncontextmenu: start", this.id);
         e.preventDefault();
         tile.rotate();
       });
