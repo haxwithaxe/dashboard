@@ -11,7 +11,7 @@ document.getElementById("focused-container").ondbclick = (event) => {
   document.getElementById("iframe-container").style.backgroundColor = "black";
   document.getElementById("full-screen").style.display = "none";
   dashboard.tiles.start();
-});
+};
 // Reload on refresh button click.
 document.getElementById("refresh-button").querySelector("a").onclick = (() => {
   window.location.reload();
