@@ -897,38 +897,11 @@ class Tile extends Item {
     return this.videoElem.querySelector("source");
   }
 
-  // Focus this tile's current source.
-  focus() {
-    const clone = this.containerElem.cloneNode(true);
-    const focusedContainer = document.getElementById("focused-container");
-    focusedContainer.appendChild(clone);
-    // Stop rotation and refreshes
-    window.stop();
-    stopTiles();
-    focusedContainer.style.display = "block";
-    focusedContainer.style.zIndex = 5;  // restore default from dashboard.css
-    focusedContainer.oncontextmenu = ((event) => {
-      event.preventDefault();
-      this.rotate();
-    });
-  }
-
   // Get the callback that focuses the tile.
   getFocusCallback() {
     function showFocused(event) {
       event.preventDefault();
-      const tile = dashboard.tiles.get(event.target.id);
-      const focusedContainer = document.getElementById("focused-container");
-      focusedContainer.appendChild(tile.containerElem);
-      // Stop rotation and refreshes
-      window.stop();
-      stopTiles();
-      focusedContainer.style.display = "block";
-      focusedContainer.style.zIndex = 5;  // restore default from dashboard.css
-      focusedContainer.oncontextmenu = ((e) => {
-        e.preventDefault();
-        tile.rotate();
-      });
+      dashboard.tiles.focus(event.target.id);
     }
     return showFocused;
   }
@@ -938,6 +911,7 @@ class Tile extends Item {
     function refresh(event) {
       event.preventDefault();
       const tile = dashboard.tiles.get(event.target.id);
+      console.debug("refresh: tile", tile);
       tile.refresh();
     }
     return refresh;
@@ -948,6 +922,7 @@ class Tile extends Item {
     function rotate(event) {
       event.preventDefault();
       const tile = dashboard.tiles.get(event.target.id);
+      console.debug("rotate: tile", tile);
       tile.rotate();
     }
     return rotate;
@@ -958,6 +933,7 @@ class Tile extends Item {
     function showMenu(event) {
       event.preventDefault();
       const tile = dashboard.tiles.get(event.target.id);
+      console.debug("showMenu: tile", tile);
       tile.showMenu();
     }
     return showMenu;
@@ -1055,7 +1031,7 @@ class Tile extends Item {
   }
 
   setCallbacks(fragment) {
-    fragment.ondbclick = this.getRotateCallback();
+    fragment.ondbclick = this.getFocusCallback();
     fragment.oncontextmenu = this.getTileMenuCallback();
     fragment.querySelector(".tile-menu-icon").onclick = this.getTileMenuCallback();
   }
@@ -1325,6 +1301,14 @@ class FocusedTile extends Tile {
     this.hideMenu();
   }
 
+  getFocusCallback() {
+    function defocus(event) {
+      event.preventDefault();
+      dashboard.tiles.defocus();
+    }
+    return defocus;
+  }
+
   getRefreshCallback() {
     function refresh(event) {
       event.preventDefault();
@@ -1369,7 +1353,8 @@ class Tiles extends Collection {
 
   // Focus the tile corresponding to tileId.
   focus(tileId) {
-    this.stop();
+    window.stop();
+    dashboard.tiles.stop();
     this.focused = FocusedTile.create({tile: this.get(tileId)});
     this.focused.show();
   }

@@ -2,16 +2,6 @@
 // Load from value in config.js
 window.dashboard = Config.create(userSettings);
 
-// Hide focused container on double click.
-document.getElementById("focused-container").ondbclick = (event) => {
-  console.debug("focused-image.ondbclick: event", event);
-  defocusImage(event);
-  document.getElementById("full-screen").src = "about:blank";
-  document.getElementById("iframe-container").style.zIndex = -2;
-  document.getElementById("iframe-container").style.backgroundColor = "black";
-  document.getElementById("full-screen").style.display = "none";
-  dashboard.tiles.start();
-};
 // Reload on refresh button click.
 document.getElementById("refresh-button").querySelector("a").onclick = (() => {
   window.location.reload();
@@ -19,12 +9,11 @@ document.getElementById("refresh-button").querySelector("a").onclick = (() => {
 });
 // Back out of all alternate views on back button click.
 document.getElementById("back-button").querySelector("a").onclick = ((event) => {
-  defocusImage(event);
   document.getelementbyid("full-screen").src = "about:blank";
   document.getelementbyid("iframe-container").style.zindex = -2;
   document.getelementbyid("iframe-container").style.backgroundcolor = "black";
   document.getelementbyid("full-screen").style.display = "none";
-  dashboard.tiles.start();
+  dashboard.tiles.defocus();
 });
 // Show help popup on help button click.
 // FIXME Implement dashboard.popup().
