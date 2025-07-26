@@ -199,7 +199,6 @@ class Item {
    *   defaults (optional): Default values for the new Item.
    */
   static create(spec, defaults) {
-    //console.debug("Item.create(spec, defaults)", spec, defaults);
     var values = {};
     if (defaults !== undefined) {
       values = Object.assign({}, defaults);
@@ -1040,7 +1039,6 @@ class Tile extends Item {
       title.style.display = "block";
       title.innerHTML = this.getTitle();
     }
-    //console.debug("getTitle, title", this.getTitle(), title);
     const iframe = this.fragment.querySelector("iframe");
     iframe.id = this.iframeId;
     const image = this.fragment.querySelector("img");
@@ -1074,7 +1072,6 @@ class Tile extends Item {
 
   // Refresh the displayed source.
   refresh() {
-    //console.debug("Tile.refresh: tile", this);
     this.show();
     if (!this.isIframe && !this.isVideo) {
       wheelzoom(this.imageElem);
