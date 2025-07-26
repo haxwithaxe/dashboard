@@ -619,18 +619,7 @@ class Feeds extends UrlCollection {
 
   fetch() {
     this.children.forEach((child) => child.fetch());
-    this.updateSpeed();
-  }
-
-  // Update the ticker scroll speed.
-  updateSpeed() {
-    // Calculate the width of the content and the container
-    const contentWidth = this.containerElem.scrollWidth;
-    const containerWidth = this.containerElem.parentElement.offsetWidth;
-    // Calculate the duration based on the content width
-    const duration = (contentWidth * 2) / this.defaults.scrollSpeed;
-    // Update the CSS variable for the animation duration
-    this.containerElem.style.setProperty("--ticker-duration", `${duration}s`);
+    this.containerElem.style.setProperty("--ticker-duration", `${this._defaults.scrollSpeed}s`);
   }
 }
 
