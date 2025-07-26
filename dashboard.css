@@ -1,14 +1,3 @@
-/*
- * z-index map
- * .tile-title = 2
- * .focused-container = 5 and -2
- * #menu-container = 20
- * .tooltip-container = 7
- * .tooltip-text-container = 7
- * .iframe-container = -2 and 1
- * .tile-iframe = 0 and FIXME
- */
-
 body, html {
   background: black;
   font-size: 100%;
@@ -66,7 +55,6 @@ body, html {
   color: white;
 }
 
-/* Style for the div containing the iframe */
 .iframe-container {
   background-color: black;
   border: 0em none;
@@ -78,7 +66,6 @@ body, html {
   align-items: center;
 }
 
-/* Style for the iframe element */
 .full-screen {
   background-color: black;
   border: 0em none;
@@ -142,7 +129,6 @@ body, html {
   --main-height: 31vh;
 }
 
-/* Style for the dashboard container */
 .dashboard {
   border: 0em none;
   display: grid;
@@ -154,7 +140,6 @@ body, html {
   width: 100%;
 }
 
-/* Style for the image container */
 .tile-container {
   position: relative;
 }
@@ -252,13 +237,11 @@ body, html {
   width: 100%;
 }
 
-/* Style for the image */
 .tile-image img, .focused-tile-image img {
   height: auto;
   width: inherit;
 }
 
-/* Style for the image titles */
 .tile-title {
   background-color: #00000099;
   border-radius: 0.7em;
@@ -278,7 +261,6 @@ body, html {
   z-index: 2;
 }
 
-/* Style for the full screen image */
 .focused-container {
   display: none;
   height: 100%;
@@ -366,9 +348,6 @@ body, html {
   padding: 1em;
 }
 
-/************************/
-/* Feed ticker styles  */
-/************************/
 .feed-ticker {
   background-color: #000000aa;
   bottom: 0;
@@ -383,7 +362,7 @@ body, html {
 }
 
 .feeds-container {
-  animation-play-state: running; /* Default state is running */
+  animation-play-state: running;
   animation: ticker var(--ticker-duration, 90s) linear infinite;
   display: inline-block;
   font-size: 0.9em;
