@@ -9,10 +9,11 @@ document.getElementById("refresh-button").querySelector("a").onclick = (() => {
 });
 // Back out of all alternate views on back button click.
 document.getElementById("back-button").querySelector("a").onclick = ((event) => {
-  document.getelementbyid("full-screen").src = "about:blank";
-  document.getelementbyid("iframe-container").style.zindex = -2;
-  document.getelementbyid("iframe-container").style.backgroundcolor = "black";
-  document.getelementbyid("full-screen").style.display = "none";
+  document.getElementById("full-screen").src = "about:blank";
+  document.getElementById("iframe-container").style.zindex = -2;
+  document.getElementById("iframe-container").style.backgroundcolor = "black";
+  document.getElementById("full-screen").style.display = "none";
+  dashboard.menu.hide();
   dashboard.tiles.defocus();
 });
 // Show help popup on help button click.
