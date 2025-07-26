@@ -814,6 +814,9 @@ class Tile extends Item {
   scale = 1;
   title = null;
 
+  parentContainerId = "tiles-container";
+  templateId = "tile-item";
+
   /* Create a new Tile.
    *
    * Arguments:
@@ -842,8 +845,6 @@ class Tile extends Item {
   }
 
   postConstructor() {
-    this.parentContainerId = "tiles-container";
-    this.templateId = "tile-item";
     if (this.sources === undefined || this.sources == null || this.sources == "") {
       console.warn("Missing src option in config", this._spec);
     }
@@ -1183,6 +1184,7 @@ class Tile extends Item {
   // Load the tile and set the rotate and refresh timeouts.
   start() {
     this.show();
+    this.insertMenu();
     this.setRefreshTimeout();
     this.setRotateTimeout();
   }
@@ -1190,6 +1192,7 @@ class Tile extends Item {
   // Clear the tile and unset the rotate and refresh timeouts.
   stop() {
     this.insert();
+    this.insertMenu();
     this.clearRefreshTimeout();
     this.clearRotateTimeout();
   }
@@ -1264,9 +1267,10 @@ class FocusedTile extends Tile {
 
   tile;
 
+  parentContainerId = "focused-container";
+  templateId = "focused-tile";
+
   postConstructor() {
-    this.parentContainerId = "focused-container";
-    this.templateId = "focused-tile";
     this.sources = this.tile.sources;
     this.id = `tile-${generateId(this.sources.current.url)}`;
     this.videoId = `video-${this.id}`;
@@ -1356,15 +1360,16 @@ class FocusedTile extends Tile {
 class Tiles extends Collection {
 
   childClass = Tile;
+  id = "tiles-container";
 
   postConstructor() {
-    this.id = "tiles-container";
     this.focused = null;
     super.postConstructor();
   }
 
   // Focus the tile corresponding to tileId.
   focus(tileId) {
+    this.stop();
     this.focused = FocusedTile.create({tile: this.get(tileId)});
     this.focused.show();
   }
@@ -1374,6 +1379,7 @@ class Tiles extends Collection {
     if (this.focused != null) {
       this.focused.hide();
     }
+    this.start();
   }
 
   get(tileId) {
@@ -1381,6 +1387,9 @@ class Tiles extends Collection {
     //   reimplemented with idEquals().
     if (tileId instanceof this.childClass) {
       tileId = tileId.id;
+    }
+    if (this.focused != null && this.focused.idEquals(tileId)) {
+      return this.focused;
     }
     return this.children.find((child) => child.idEquals(tileId));
   }

@@ -207,12 +207,12 @@ body, html {
   position: relative;
 }
 
-.tile-image {
+.tile-image, .tile-iframe {
   height: var(--main-height);
   width: var(--main-width);
 }
 
-.focused-tile-image {
+.focused-tile-image, .focused-tile-iframe {
   height: 100%;
   width: 100%;
 }
@@ -225,16 +225,6 @@ body, html {
   margin: 0;
   overflow: hidden;
   position: absolute; /* it must be absolute */
-}
-
-.tile-iframe {
-  height: var(--main-height);
-  width: var(--main-width);
-}
-
-.focused-tile-iframe {
-  height: 100%;
-  width: 100%;
 }
 
 .tile-image img, .focused-tile-image img {
