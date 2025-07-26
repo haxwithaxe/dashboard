@@ -1020,8 +1020,6 @@ class Tile extends Item {
     iframe.id = this.iframeId;
     const image = this.fragment.querySelector("img");
     image.id = this.imageId;
-    image.oncontextmenu = this.getRotateCallback();  // global function
-    image.ondblclick = this.getFocusCallback();  // global function
     const menuIcon = this.fragment.querySelector(".tile-menu-icon");
     menuIcon.onclick = this.getTileMenuCallback();
     menuIcon.id = this.menuIconId;
@@ -1031,8 +1029,6 @@ class Tile extends Item {
   }
 
   setCallbacks(fragment) {
-    fragment.ondbclick = this.getFocusCallback();
-    fragment.oncontextmenu = this.getTileMenuCallback();
     fragment.querySelector(".tile-menu-icon").onclick = this.getTileMenuCallback();
   }
 
