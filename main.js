@@ -1,47 +1,46 @@
 
-// Load from config.js
+// Load from value in config.js
 window.dashboard = Config.create(userSettings);
 
-// Configurable grid layout logic. Defaults to standard 4 columns by 3 rows if values are missing in config.js file.
-document.getElementById("focused-container").addEventListener("dbclick", (event) => {
+// Hide focused container on double click.
+document.getElementById("focused-container").ondbclick = (event) => {
   console.debug("focused-image.ondbclick: event", event);
   defocusImage(event);
   document.getElementById("full-screen").src = "about:blank";
   document.getElementById("iframe-container").style.zIndex = -2;
   document.getElementById("iframe-container").style.backgroundColor = "black";
   document.getElementById("full-screen").style.display = "none";
-  startTiles();
+  dashboard.tiles.start();
 });
+// Reload on refresh button click.
 document.getElementById("refresh-button").querySelector("a").onclick = (() => {
   window.location.reload();
-  startTiles();
+  dashboard.tiles.start();
 });
+// Back out of all alternate views on back button click.
 document.getElementById("back-button").querySelector("a").onclick = ((event) => {
   defocusImage(event);
   document.getelementbyid("full-screen").src = "about:blank";
   document.getelementbyid("iframe-container").style.zindex = -2;
   document.getelementbyid("iframe-container").style.backgroundcolor = "black";
   document.getelementbyid("full-screen").style.display = "none";
-  starttiles();
+  dashboard.tiles.start();
 });
+// Show help popup on help button click.
+// FIXME Implement dashboard.popup().
+// FIXME Implement helpText.
 document.getElementById("help-button").querySelector("a").onclick = (() => dashboard.popup(helpText));
-document.getElementById("sources-button").querySelector("a").onclick = (() => {
-  document.getElementById("overlay").style.display = "block";
-});
-
+// Prep update button.
 const updateButton = document.getElementById("update-button");
 updateButton.querySelector("a").href = projectReleasesUrl;
 updateButton.querySelector("a").target = "_blank";
-
-
+// Reload on window resize.
 window.addEventListener("resize", function () {
   window.location.reload();
 });
-
-
 // Load Initial Data
 dashboard.start();
-
+// Show global menu on menu button click.
 document.getElementById("global-menu-icon").onclick = (() => dashboard.menu.show());
 
 var layoutFeedOffset = dashboard.feeds.length > 0 ? 2 : 0;
@@ -61,12 +60,12 @@ document.documentElement.style.setProperty(
   layoutHeight
 );
 if (dashboard.feeds.length > 0) {
-  // Unhide the RSS ticker div
+  // Unhide the RSS ticker div.
   const ticker = document.querySelector("#feed-ticker");
   ticker.classList.remove("hidden");
-  // Call the function to fetch and display RSS feeds
+  // Call the function to fetch and display feeds.
   dashboard.feeds.fetch();
-  // Add event listeners for pause and resume functionality
+  // Add event listeners for pause and resume ticker motion.
   const tickerContainer = document.querySelector("#feeds-container");
   tickerContainer.addEventListener("mouseenter", () => {            
     tickerContainer.style.animationPlayState = "paused";
@@ -75,9 +74,9 @@ if (dashboard.feeds.length > 0) {
     tickerContainer.style.animationPlayState = "running";
   });
 }
-
+// Apply wheelzoom to all images including the focused container image.
 wheelzoom(document.querySelectorAll("img"));
-// Update every second
+// Update the top bar every second for the seconds display in the times.
 setInterval((() => dashboard.topBar.show()), 1000);
 
 // Run the check when the application starts

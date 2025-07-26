@@ -5,6 +5,14 @@ const proxyUrl = "https://corsproxy.io/";
 const videoExtensions = [".mp4", ".webm", ".ogg", ".ogv"];
 
 
+/* Create a new element from a template.
+ *
+ * Arguments:
+ *   id: The template element ID.
+ *
+ * Returns:
+ *  A clone of the template content.
+ */
 function createFromTemplate(id) {
   const templateElem = document.getElementById(id);
   // Strip leading and trailing whitespace to avoid extra empty text nodes
@@ -12,7 +20,7 @@ function createFromTemplate(id) {
   return templateElem.content.cloneNode(true);
 }
 
-
+// Check for updates on github.
 async function checkForUpdates() {
   const latestVersion = await getLatestVersion();
   if (currentVersion != latestVersion) {
@@ -23,33 +31,14 @@ async function checkForUpdates() {
 }
 
 
-async function checkIfFileExists(url) {
-  try {
-    const response = await fetch(url, {method: "HEAD", mode: "no-cors"});
-    return response.ok;
-  } catch (error) {
-    console.error("Error checking file:", error);
-    return false;
-  }
-}
-
-
-// This function shows the larger images when double click to enlarge
-function defocusImage(event) {
-  //console.debug("defocusImage");
-  event.preventDefault();
-  const focusedContainer = document.getElementById("focused-container");
-  focusedContainer.removeAttribute("tile");
-  focusedContainer.style.display = "none";
-  focusedContainer.style.zIndex = -2;
-  // Start rotation and refreshes
-  startTiles();
-}
-
-
 /* Generate a probably unique ID one way or another
+ *
  * Arguments:
- *   uniquish: Some relatively unique within collection string
+ *   uniquish: Some relatively unique within collection string just in case 
+ *     self.crypto isn't available.
+ *
+ * Returns:
+ *   A probably unique string.
  */
 function generateId(uniquish) {
   if (self.crypto !== undefined && self.crypto.randomUUID !== undefined) {
@@ -63,7 +52,7 @@ function generateId(uniquish) {
   return hash.toString() + randomInt(1000).toString();
 }
 
-
+// Get the latest version number of this application.
 async function getLatestVersion() {
   try {
     const response = await fetch(projectLatestReleaseApiUrl);
@@ -133,7 +122,11 @@ function parseInterval(interval_string) {
   return interval;
 }
 
-
+/* Show an error message to the user.
+ *
+ * Arguments:
+ *   text: The error text to show the user.
+ */
 function showGlobalError(text) {
   const errorElem = document.getElementById("global-error");
   const message = createFromTemplate("error-message");
@@ -142,7 +135,13 @@ function showGlobalError(text) {
   errorElem.classList.remove("hidden");
 }
 
-
+/* Sort items by order.
+ *
+ * Negative values of `order` are treated like negative indexes.
+ *
+ * Arguments:
+ *   a, b: The items to compare. 
+ */
 function sortCompareOrder(a, b) {
   if (a.order >= 0 && b.order < 0) {
     return -1;
@@ -164,6 +163,7 @@ function stopTiles() {
 }
 
 
+// A common time source to synchronize seconds.
 class TimeSource {
 
   constructor() {
@@ -189,8 +189,15 @@ class TimeSource {
 const sharedTime = new TimeSource();
 
 
+// Base class that sort of mimics python's dataclass.
 class Item {
 
+  /* Create a new Item
+   *
+   * Arguments:
+   *   spec: The item spec.
+   *   defaults (optional): Default values for the new Item.
+   */
   static create(spec, defaults) {
     //console.debug("Item.create(spec, defaults)", spec, defaults);
     var values = {};
@@ -210,22 +217,30 @@ class Item {
     }
   }
 
+  // Runs at the end of the `create` method (after `constructor`).
   postConstructor() {
-    //console.debug(`${this.constructor.name}.postConstructor: this.id before`, this.id);
     if (this.id === undefined) {
       this.id = generateId(this.constructor.name);
     }
-    //console.debug(`${this.constructor.name}.postConstructor: this.id after`, this.id);
     this.insert();
   }
 
+  /* Populates an HTML fragment with Item values.
+   *
+   * Arguments:
+   *   fragment: An HTML fragment or element to modify.
+   *
+   * Returns:
+   *   The modified fragment.
+   */
   populateTemplate(fragment) {
     return fragment;
   }
 
+  // Insert the Item's element into the DOM.
   insert() {
     if (this.templateId === undefined) {
-      //console.debug(`${this.constructor.name}.insert: missing templateId`, this);
+      // No template required so skip this.
       return;
     }
     this.fragment = createFromTemplate(this.templateId);
@@ -235,21 +250,28 @@ class Item {
     if (this.containerElem == null || this.containerElem === undefined) {
       document.getElementById(this.parentContainerId).appendChild(this.fragment);
     } else {
-      console.debug("this.containerElem", this.containerElem, this.fragment);
       this.containerElem.replaceWith(this.fragment);
     }
   }
 
+  /* Set various callbacks on an HTML fragment.
+   * 
+   * Arguments:
+   *   fragment: An HTML fragment or element.
+   *
+   * Returns:
+   *   The modified fragment.
+   */
   setCallbacks(fragment) {
     return fragment;
   }
 
+  // Returns the outermost element of the Item.
   get containerElem() {
-    const elem = document.getElementById(this.id);
-    //console.debug(`${this.constructor.name}.containerElem: this.id`, this.id, elem);
-    return elem;
+    return document.getElementById(this.id);
   }
 
+  // Generic equality test.
   equals(other) {
     for (let key in this) {
       let a = this[key];
@@ -271,14 +293,14 @@ class Item {
 }
 
 
+// Base class for collections of Items.
 class Collection extends Item {
 
-  childClass;
-  childDefaults;
-  specs = [];
+  childClass;  // The class of the child Items.
+  childDefaults;  // Default values for the child Items.
+  specs = [];  // The input list of child Item specifications.
 
   static create(spec, defaults) {
-    //console.debug("Collection.create(spec, defaults)", spec, defaults);
     if (Array.isArray(spec)) {
       spec = {specs: spec};
     }
@@ -296,10 +318,16 @@ class Collection extends Item {
     });
   }
 
+  // Returns the number of child Items.
   get length() {
     return this.children.length;
   }
 
+  /* Append a child using child specifications
+   *
+   * Arguments:
+   *  childSpec: An Object with specifications for a new child Item.
+   */
   append(childSpec) {
     if (childSpec instanceof this.childClass) {
       childSpec = childSpec.toSpec();
@@ -307,14 +335,29 @@ class Collection extends Item {
     this.children.append(this.childClass.create(childSpec, this.childDefaults));
   }
 
+  /* Filter child Items.
+   *
+   * Arguments:
+   *   func: A function to filter the child Items.
+   */
   filter(func) {
-    this.children.filter(func);
+    return this.children.filter(func);
   }
-  
+ 
+  /* Find a child Item.
+   *
+   * Arguments:
+   *   func: A function to use to find a child Item.
+   */
   find(func) {
     return this.children.find(func);
   }
 
+  /* Find a child element by ID.
+   *
+   * Arguments:
+   *   childId: 
+   */
   findIndexById(childId) {
     if (childId instanceof this.childClass) {
       childId = childId.id;
@@ -322,6 +365,7 @@ class Collection extends Item {
     return this.children.findIndex(this.get(childId));
   }
 
+  // Get a child Item by its ID.
   get(childId) {
     if (childId instanceof this.childClass) {
       childId = childId.id;
@@ -329,6 +373,7 @@ class Collection extends Item {
     return this.children.find((child) => child.id == childId);
   }
 
+  // Insert the Collection into the DOM.
   insert() {
     document.getElementById(this.id).childNodes.forEach((child) =>
       document.getElementById(this.id).removeChild(child)
@@ -336,14 +381,17 @@ class Collection extends Item {
     this.children.sort(sortCompareOrder).forEach((child) => child.show());
   }
 
+  // Map the children of the Collection.
   map(func) {
     return this.children.map(func);
   }
 
+  // Push a new child Item onto the Collection.
   push(child) {
     this.children.push(child);
   }
 
+  // Remove a child of the Collection.
   pop(child) {
     if (childId instanceof this.childClass) {
       childId = childId.id;
@@ -351,20 +399,28 @@ class Collection extends Item {
     return this.children.pop(this.findIndexById(child));
   }
 
-  shift(child) {
-    return this.children.shift(child);
+  // Remove children from the Collection.
+  shift(children) {
+    return this.children.shift(children);
   }
 
+  // Returns an Array of Objects representing the children of the Collection.
   toSpec() {
     return this.children.map((child) => child.toSpec());
   }
 
+  // Add children to the Collection.
   unshift(child) {
     this.children.unshift(child);
   }
 }
 
 
+/* Base class for Collections of URLs.
+ *
+ * Allows the spec to be a string, a Array of strings or an Array of Objects.
+ *
+ */
 class UrlCollection extends Collection {
 
   static create(spec, defaults) {
@@ -388,11 +444,20 @@ class UrlCollection extends Collection {
 }
 
 
+/* Dashboard class
+ * 
+ * Attributes:
+ *   columns (Integer): FIXME Defaults to 4.
+ *   rows (Integer): FIXME Defaults to 3.
+ *   feedScrollSpeed (Number): FIXME Defaults to 180.
+ *   menu (Menu): The user defined menus.
+ *   feeds (Feeds): The Collection of feeds.
+ *   tiles (Tiles): The Collection of tiles.
+ *   topBar (TopBar): The top bar.
+ */
 class Config extends Item {
 
   columns = 4;
-  comment = null;
-  defaultMenuSide = "left";
   rows = 3;
   feedScrollSpeed = 180;
   menu = {};
@@ -401,7 +466,6 @@ class Config extends Item {
   topBar = {};
 
   postConstructor() {
-    //console.debug("Config.postConstructor: this", this);
     this.menu = Menu.create(this.menu);
     this.feeds = Feeds.create(this.feeds, {scrollSpeed: this.feedScrollSpeed});
     this.tiles = Tiles.create(this.tiles);
@@ -421,6 +485,7 @@ class Config extends Item {
     };
   }
 
+  // Initialize the dashboard.
   start() {
     this.topBar.show();
     this.menu.hide();
@@ -429,12 +494,19 @@ class Config extends Item {
 }
 
 
+/* Individual feed class
+ *
+ * Attributes:
+ *   url (string): RSS or Atom feed URL.
+ *   bgColor (HTML color code, optional): Override the feed background color.
+ *   refreshInterval (interval, optional): The interval between refreshing the feed. Defaults to "1h".
+ *   textColor (HTML color code, optional): Override the feed text color.
+ *   titleTextColor (HTML color code, optional): Override the feed title text color.
+ */
 class Feed extends Item {
 
   bgColor = null;
-  comment = null;
   refreshInterval = "1h";
-  scrollSpeed;
   textColor = null;
   titleTextColor = null;
   url;
@@ -451,7 +523,7 @@ class Feed extends Item {
   }
 
   insert() {
-    return;
+    return;  // This has no elements to insert.
   }
 
   toSpec() {
@@ -464,6 +536,7 @@ class Feed extends Item {
     }
   }
 
+  // Parse the downloaded feed and display it.
   parse(feedXml) {
     const feedElems = []; 
     if (this.bgColor != null) {
@@ -522,21 +595,10 @@ class Feed extends Item {
     } else {
       document.getElementById("feed-ticker-error").classList.add("hidden");
     }
-    this.updateSpeed();
   }
 
-  updateSpeed() {
-    // Calculate the width of the content and the container
-    const contentWidth = this.containerElem.scrollWidth;
-    const containerWidth = this.containerElem.parentElement.offsetWidth;
-    // Calculate the duration based on the content width
-    const duration = (contentWidth * 2) / this.scrollSpeed;
-    // Update the CSS variable for the animation duration
-    this.containerElem.style.setProperty("--ticker-duration", `${duration}s`);
-  }
-
+  // Asynchronously download the feed.
   fetch() {
-    //console.log(`Fetching feed: ${this.url}`);
     fetch(proxyUrl + "?url=" + encodeURIComponent(this.url))
       .then((response) => response.text())
       .then((data) => {
@@ -549,7 +611,7 @@ class Feed extends Item {
   }
 }
 
-
+// Collection of Feed Items.
 class Feeds extends UrlCollection {
 
   childClass = Feed;
@@ -557,14 +619,35 @@ class Feeds extends UrlCollection {
 
   fetch() {
     this.children.forEach((child) => child.fetch());
+    this.updateSpeed();
+  }
+
+  // Update the ticker scroll speed.
+  updateSpeed() {
+    // Calculate the width of the content and the container
+    const contentWidth = this.containerElem.scrollWidth;
+    const containerWidth = this.containerElem.parentElement.offsetWidth;
+    // Calculate the duration based on the content width
+    const duration = (contentWidth * 2) / this.defaults.scrollSpeed;
+    // Update the CSS variable for the animation duration
+    this.containerElem.style.setProperty("--ticker-duration", `${duration}s`);
   }
 }
 
 
+/* Menu item config and display.
+ *
+ * Attributes:
+ *   text (string): The text of the menu button.
+ *   bgColor (HTML color code, optional): Override menu button background color.
+ *   order (Number, optional): Specify the order to display the button.
+ *   scale (Number, optional): FIXME
+ *   textColor (HTML color code, optional): Override menu button text color.
+ *   url (string, optional): The target URL. Defaults to "#".
+ */
 class MenuItem extends Item {
 
   bgColor = null;
-  comment = null;
   order = -1;
   scale = 1;
   text = "No Text";
@@ -626,22 +709,24 @@ class MenuItem extends Item {
   }
 }
 
-
+// A collection of user menu items.
 class Menu extends Collection {
 
   childClass = MenuItem;
   id = "user-menu-container";
 
   insert() {
-    return;
+    return;  // This has no elements to insert.
   }
 
+  // Show the user menu and global menu.
   show() {
     document.getElementById("menu-container").style.display = "block";
     document.getElementById("global-menu-icon").onclick = (() => this.hide());
     this.children.forEach((child) => child.show());
   }
 
+  // Hide the user menu and global menu.
   hide() {
     document.getElementById("menu-container").style.display = "none";
     document.getElementById("global-menu-icon").onclick = (() => this.show());
@@ -649,9 +734,17 @@ class Menu extends Collection {
 }
 
 
+/* A Tile source.
+ *
+ * Attributes:
+ *   iframe (boolean): If true the source is displayed as an iFrame.
+ *   mimetype (string): Override the detected mimetype of the source if it is a video.
+ *   refreshInterval (interval): FIXME.
+ *   rotateInterval (interval): FIXME.
+ *   url (string): A URL to display. 
+ */
 class Source extends Item {
 
-  comment = null;
   iframe = false;
   mimetype = null;
   refreshInterval = "5m";
@@ -659,8 +752,8 @@ class Source extends Item {
   url;
 
   postConstructor() {
-    this.parentContainerId = "tiles-container";
-    this.templateId = "source-item";
+    //DEBUG this.parentContainerId = "tiles-container";
+    //DEBUG this.templateId = "source-item";
     if (this.url === undefined) {
       console.error("Missing 'url' option in the following config.", this.args.config);
     }
@@ -671,7 +764,7 @@ class Source extends Item {
   }
 
   insert() {
-    return;
+    return;  // This has no elements to insert.
   }
 
   toSpec() {
@@ -687,19 +780,22 @@ class Source extends Item {
 }
 
 
+// Collection of Tile sources.
 class Sources extends UrlCollection {
 
   childClass = Source;
   currentIndex = 0;
 
+  // The currently active source.
   get current() {
     return this.children[this.currentIndex];
   }
 
   insert() {
-    return;
+    return;  // This has no elements to insert.
   }
 
+  // Select the next source and return it.
   next() {
     if (this.currentIndex >= this.children.length-1) {
       this.currentIndex = 0;
@@ -711,9 +807,18 @@ class Sources extends UrlCollection {
 }
 
 
+/* Dashboard tile config and display.
+ * 
+ * Attributes:
+ *   fit (string): FIXME. Valid values if set are "both", "width", "height".
+ *   iframe: FIXME
+ *   refreshInterval (interval): Defaults to "5m".
+ *   rotateInterval (interval): Defaults to "5m".
+ *   scale (Number): FIXME. Defaults to 1;
+ *   title: The title to display over a tile if set.
+ */
 class Tile extends Item {
 
-  comment = null;
   fit = null;
   iframe = false;
   refreshInterval = "5m";
@@ -721,8 +826,15 @@ class Tile extends Item {
   scale = 1;
   title = null;
 
+  /* Create a new Tile.
+   *
+   * Arguments:
+   *   spec (string|Array|Object): The URL of a single source, an Array of URL 
+   *     strings, an Array of source configs, or an Object of the tile 
+   *     configuration.
+   *   defaults: An Object with Tile defaults.
+   */
   static create(spec, defaults) {
-    //console.debug("Tile.create: spec", spec);
     if (typeof spec == "string") {
       spec = {sources: [{url: spec}]};
     } else if (Array.isArray(spec)){
@@ -744,7 +856,6 @@ class Tile extends Item {
   postConstructor() {
     this.parentContainerId = "tiles-container";
     this.templateId = "tile-item";
-    //console.debug("Tile.postConstructor: this.sources", this.sources);
     if (this.sources === undefined || this.sources == null || this.sources == "") {
       console.warn("Missing src option in config", this._spec);
     }
@@ -762,34 +873,42 @@ class Tile extends Item {
     this.insertMenu();
   }
 
+  // The image element.
   get imageElem() {
     return document.getElementById(this.imageId);
   }
 
+  // The iFrame element.
   get iframeElem() {
     return document.getElementById(this.iframeId);
   }
 
+  // The menu container element.
   get menuElem() {
     return document.getElementById(this.menuId);
   }
 
+  // The menu icon element.
   get menuIconElem() {
     return document.getElementById(this.menuIconId);
   }
 
+  // The tile title element.
   get titleElem() {
     return this.containerElem.querySelector(".tile-title");
   }
 
+  // The <video> element.
   get videoElem() {
     return document.getElementById(this.videoId);
   }
 
+  // The <source> element in the <video> element.
   get videoSource() {
     return this.videoElem.querySelector("source");
   }
 
+  // Focus this tile's current source.
   focus() {
     const clone = this.containerElem.cloneNode(true);
     const focusedContainer = document.getElementById("focused-container");
@@ -805,6 +924,7 @@ class Tile extends Item {
     });
   }
 
+  // Get the callback that focuses the tile.
   getFocusCallback() {
     function showFocused(event) {
       event.preventDefault();
@@ -826,6 +946,7 @@ class Tile extends Item {
     return showFocused;
   }
 
+  // Get the callback that refreshes the tile.
   getRefreshCallback() {
     function refresh(event) {
       event.preventDefault();
@@ -835,6 +956,7 @@ class Tile extends Item {
     return refresh;
   }
 
+  // Get the callback that rotates the source of the tile.
   getRotateCallback() {
     function rotate(event) {
       event.preventDefault();
@@ -844,6 +966,7 @@ class Tile extends Item {
     return rotate;
   }
 
+  // Get the callback that shows the tile menu.
   getTileMenuCallback() {
     function showMenu(event) {
       event.preventDefault();
@@ -853,6 +976,11 @@ class Tile extends Item {
     return showMenu;
   }
 
+  /* Get the tile title.
+   *
+   * If the current source has its own title that is returned. Otherwise return
+   *   the tile's title.
+   */
   getTitle() {
     if (this.sources.current.title != null && this.sources.current.title != "" && this.sources.current.title !== undefined) {
       return this.sources.current.title;
@@ -862,6 +990,7 @@ class Tile extends Item {
     return null;
   }
 
+  // Hide the tile menu.
   hideMenu() {
     this.menuIconElem.onclick = ((e) => {
       dashboard.tiles.get(e.target.id).showMenu();
@@ -870,7 +999,6 @@ class Tile extends Item {
   }
 
   insertMenu() {
-    //console.debug("Tile.insertMenu: this", this);
     document.querySelector(`#${this.id}`).querySelector(`.tile-menu`).id = this.menuId;
     const refreshButton = this.menuElem.querySelector(".tile-refresh-button");
     refreshButton.id = `refresh-button-${this.id}`;
@@ -903,17 +1031,16 @@ class Tile extends Item {
     this.hideMenu();
   }
 
+  // Test if the given ID goes with the tile.
   idEquals(id) {
     const tileId = `tile${id.split("tile")[1]}`;
-    //console.debug("tileId", tileId);
     if (this.id == tileId) {
-      //console.debug("id == tileId", tileId);
       return true;
     }
-    //console.debug("id != any", id);
     return false;
   }
 
+  // Returns true if the current source is an iFrame.
   isFrame() {
     return this.sources.current.iframe;
   }
@@ -947,15 +1074,18 @@ class Tile extends Item {
     fragment.querySelector(".tile-menu-icon").onclick = this.getTileMenuCallback();
   }
 
+  // True if the URL of the current source is probably a video. 
   isVideo() {
     return videoExtensions.some((ext) => this.sources.current.url.includes(ext));
   }
 
+  // Select the next source and return this instance.
   next() {
     this.sources.next();
     return this;
   }
 
+  // Refresh the displayed source.
   refresh() {
     //console.debug("Tile.refresh: tile", this);
     this.show();
@@ -966,8 +1096,8 @@ class Tile extends Item {
     this.setRefreshTimeout();
   }
 
+  // Switch the displayed source to the next one.
   rotate() {
-    //console.debug("Tile.rotate: tile", this);
     this.clearRotateTimeout();
     if (this.sources.length > 1) {
       this.next();
@@ -977,6 +1107,7 @@ class Tile extends Item {
     this.refresh();
   }
 
+  // Show the appropriate element in the tile.
   show() {
     if (this.isVideo()) {
       this.showVideo();
@@ -988,6 +1119,7 @@ class Tile extends Item {
     }
   }
 
+  // Show the URL in an iFrame in the tile.
   showIframe(url) {
     if (url === undefined) {
       url = this.sources.current.url;
@@ -1002,6 +1134,7 @@ class Tile extends Item {
     this.videoElem.classList.add("hidden");
   }
 
+  // Show the image in the URL in the tile.
   showImage(url) {
     if (url === undefined) {
       url = this.sources.current.url;
@@ -1031,6 +1164,7 @@ class Tile extends Item {
     this.videoElem.classList.add("hidden");
   }
 
+  // Show the tile menu.
   showMenu() {
     this.menuIconElem.onclick = ((e) => {
       dashboard.tiles.get(e.target.id).hideMenu();
@@ -1038,6 +1172,7 @@ class Tile extends Item {
     this.menuElem.style.display = "grid";
   }
 
+  // Show a video in the URL in the tile.
   showVideo(url) {
     if (url === undefined) {
       url = this.sources.current.url;
@@ -1061,12 +1196,14 @@ class Tile extends Item {
     this.imageElem.classList.add("hidden");
   }
 
+  // Load the tile and set the rotate and refresh timeouts.
   start() {
     this.show();
     this.setRefreshTimeout();
     this.setRotateTimeout();
   }
 
+  // Clear the tile and unset the rotate and refresh timeouts.
   stop() {
     this.insert();
     this.clearRefreshTimeout();
@@ -1133,6 +1270,12 @@ class Tile extends Item {
   }
 }
 
+
+/* The focused tile config and display.
+ *
+ * Attributes:
+ *   tile (Tile): The tile to display fullscreen. 
+ */
 class FocusedTile extends Tile {
 
   tile;
@@ -1225,6 +1368,7 @@ class FocusedTile extends Tile {
 }
 
 
+// Collection of Tile instances.
 class Tiles extends Collection {
 
   childClass = Tile;
@@ -1235,11 +1379,13 @@ class Tiles extends Collection {
     super.postConstructor();
   }
 
+  // Focus the tile corresponding to tileId.
   focus(tileId) {
     this.focused = FocusedTile.create({tile: this.get(tileId)});
     this.focused.show();
   }
 
+  // Defocus the focused tile.
   defocus() {
     if (this.focused != null) {
       this.focused.hide();
@@ -1247,26 +1393,29 @@ class Tiles extends Collection {
   }
 
   get(tileId) {
+    // Tiles can match the IDs of any of their elements so this had to be
+    //   reimplemented with idEquals().
     if (tileId instanceof this.childClass) {
       tileId = tileId.id;
     }
-    const child = this.children.find((child) => child.idEquals(tileId));
-    //console.debug("Tiles.get(tileId): child", tileId, child);
-    return child;
+    return this.children.find((child) => child.idEquals(tileId));
   }
 
   insert() {
-    return;
+    return; // No container to insert.
   }
 
+  // Show all tiles.
   show() {
     this.children.forEach((tile) => tile.show());
   }
 
+  // Start all tiles.
   start() {
     this.children.forEach((tile) => tile.start());
   }
 
+  // Stop all tiles.
   stop() {
     this.children.forEach((tile) => tile.stop());
   }
@@ -1277,6 +1426,13 @@ class Tiles extends Collection {
 }
 
 
+/* Top bar part base class.
+ *
+ * Attributes:
+ *   text (string): The text to display in the top bar part.
+ *   textColor (HTML color code): Override the text color.
+ *   bgColor (HTML color code): Override the background color.
+ */
 class TopBarPart extends Item {
 
   text = null;
@@ -1287,11 +1443,12 @@ class TopBarPart extends Item {
     return;
   }
 
+  // Returns the text to display in the top bar part.
   getText() {
     return this.text;
   }
 
-  // Show the TopBar part
+  // Show the TopBar part.
   show() {
     if (this.bgColor != null) {
       this.containerElem.style.backgroudColor = this.bgColor;
@@ -1308,6 +1465,7 @@ class TopBarPart extends Item {
 }
 
 
+// The left top bar config and display.
 class TopBarLeft extends TopBarPart {
 
   text = null;
@@ -1316,6 +1474,7 @@ class TopBarLeft extends TopBarPart {
 
   id = "top-bar-left"; 
 
+  // Returns the formatted local date and time.
   getText() {
     sharedTime.update();
     const localDate = sharedTime.now.toLocaleDateString("en-US", {
@@ -1335,6 +1494,7 @@ class TopBarLeft extends TopBarPart {
 }
 
 
+// The center top bar config and display.
 class TopBarCenter extends TopBarPart {
 
   text = "CALLSIGN - Locator";
@@ -1345,6 +1505,7 @@ class TopBarCenter extends TopBarPart {
 }
 
 
+// The right top bar config and display.
 class TopBarRight extends TopBarPart {
 
   text = null;
@@ -1353,6 +1514,7 @@ class TopBarRight extends TopBarPart {
 
   id = "top-bar-right"; 
 
+  // Returns the formatted UTC date and time.
   getText() {
     sharedTime.update();
     const utcDate = sharedTime.now.toISOString().slice(0, 10);
@@ -1361,7 +1523,13 @@ class TopBarRight extends TopBarPart {
   }
 }
 
-
+/* Top bar configuration and display.
+ *
+ * Attributes:
+ *   left (TopBarLeft): The left top bar part.
+ *   center (TopBarCenter): The center top bar part.
+ *   right (TopBarRight): The right top bar part.
+ */
 class TopBar extends Item {
 
   left;
