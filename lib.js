@@ -740,8 +740,6 @@ class Source extends Item {
   url;
 
   postConstructor() {
-    //DEBUG this.parentContainerId = "tiles-container";
-    //DEBUG this.templateId = "source-item";
     if (this.url === undefined) {
       console.error("Missing 'url' option in the following config.", this.args.config);
     }
