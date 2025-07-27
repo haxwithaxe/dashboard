@@ -66,15 +66,17 @@ body, html {
   align-items: center;
 }
 
-.full-screen {
+#focused-iframe {
   background-color: black;
   border: 0em none;
   height: 100%;
-  width: 98%;
-  margin-bottom: 0em;
-  margin-left: 1%;
+  width: 100%;
+  margin: 0em;
   justify-content: center;
   align-items: center;
+  display: flex;
+  float: inline-start;
+  position: relative;
   -ms-zoom: 1;
   -moz-transform: scale(1);
   -moz-transform-origin: 0 0;

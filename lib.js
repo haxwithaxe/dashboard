@@ -42,14 +42,14 @@ async function checkForUpdates() {
  */
 function generateId(uniquish) {
   if (self.crypto !== undefined && self.crypto.randomUUID !== undefined) {
-    return self.crypto.randomUUID();
+    return "id" + self.crypto.randomUUID();
   }
   let hash = 0;
   for (const char of uniquish) {
     hash = (hash << 5) - hash + char.charCodeAt(0);
     hash |= 0; // Constrain to 32bit integer
   }
-  return hash.toString() + randomInt(1000).toString();
+  return "id" + hash.toString() + randomInt(1000).toString();
 }
 
 // Get the latest version number of this application.
@@ -646,21 +646,11 @@ class MenuItem extends Item {
     this.parentContainerId = "user-menu-container";
     this.templateId = "user-menu-item";
     this.id = generateId(this.text + this.url);
-    // Allow for override
-    if (this.onClickCallback !== undefined) {
-      this.onClickCallback = function() {
-        document.getElementById("iframe-container").style.zIndex = 1;
-        document.getElementById("full-screen").style.display = "block";
-        document.getElementById("full-screen").src = this.url;
-        document.getElementById("full-screen").style.transform = `scale(${this.scale})`;
-      };
-    }
     super.postConstructor();
   }
 
   populateTemplate(fragment) {
     const link = fragment.querySelector("a");
-    link.onclick = this.onClickCallback;
     link.textContent = this.text;
     if (this.bgColor != null) {
       link.style.backgroundColor = this.bgColor;
@@ -668,7 +658,43 @@ class MenuItem extends Item {
     if (this.textColor != null) {
       link.style.color = this.textColor;
     }
-    console.debug("fragment", fragment);
+    return fragment;
+  }
+
+  defocus() {
+    const container = document.getElementById("focused-container");
+    container.style.display = "none";
+    container.style.zIndex = -2;
+    const iframe = document.getElementById("focused-iframe");
+    console.debug("MenuItem.defocus: ifame", iframe);
+    iframe.src = "about:blank";
+    iframe.title = "";
+    iframe.style.display = "none";
+  }
+
+  focus() {
+    const container = document.getElementById("focused-container");
+    container.style.display = "block";
+    container.style.zIndex = 2;
+    const iframe = document.getElementById("focused-iframe");
+    iframe.style.transform = `scale(${this.scale})`;
+    iframe.style.display = "block";
+    iframe.title = this.text;
+    iframe.src = this.url;
+  }
+
+  setCallbacks(fragment) {
+    console.debug("MenuItem.setCallbacks: fragment", fragment);
+    fragment.querySelector(`#${this.id}`).onclick = (event) => {
+      event.preventDefault();
+      var menuItem = dashboard.menu.get(event.target.id);
+      if (menuItem === undefined) {
+        menuItem = dashboard.menu.get(event.target.parentElement.id);
+      }
+      console.debug("MenuItem.onclick callback: menuItem, event", menuItem, event);
+      dashboard.menu.focus(menuItem.id);
+      dashboard.menu.hide();
+    }
     return fragment;
   }
 
@@ -702,6 +728,21 @@ class Menu extends Collection {
 
   childClass = MenuItem;
   id = "user-menu-container";
+  _focused = null;
+
+  defocus() {
+    if (this._focused == null) {
+      return;
+    }
+    this._focused.defocus();
+    this._focused = null;
+  }
+
+  focus(menuItemId) {
+    this.defocus();
+    this._focused = this.get(menuItemId);
+    this._focused.focus();
+  }
 
   insert() {
     return;  // This has no elements to insert.
@@ -1295,6 +1336,8 @@ class FocusedTile extends Tile {
     this.hideMenu();
   }
 
+  // Called in superclass Tile.
+  // Returns a function that defocuses this Item.
   getFocusCallback() {
     function defocus(event) {
       event.preventDefault();

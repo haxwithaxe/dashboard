@@ -9,10 +9,8 @@ document.getElementById("refresh-button").querySelector("a").onclick = (() => {
 });
 // Back out of all alternate views on back button click.
 document.getElementById("back-button").querySelector("a").onclick = ((event) => {
-  document.getElementById("full-screen").src = "about:blank";
-  document.getElementById("iframe-container").style.zindex = -2;
-  document.getElementById("iframe-container").style.backgroundcolor = "black";
-  document.getElementById("full-screen").style.display = "none";
+  console.debug("Clicked back-button");
+  dashboard.menu.defocus();
   dashboard.menu.hide();
   dashboard.tiles.defocus();
 });
