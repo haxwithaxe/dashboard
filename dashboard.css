@@ -235,6 +235,7 @@ body, html {
 }
 
 .tile-title {
+  display: block; /* Just to be explicit since it's set in the js */
   background-color: #00000099;
   border-radius: 0.7em;
   color: white;
@@ -254,7 +255,7 @@ body, html {
 }
 
 .focused-container {
-  display: none;
+  display: block;
   height: 100%;
   margin-left: auto;
   margin-right: auto;
@@ -262,7 +263,14 @@ body, html {
   max-width: 100%;
   position: relative;
   width: 100%;
-  z-index: 5;
+  z-index: -2;
+}
+
+.focused-tile-parent {
+  position: relative;
+  display: block;
+  height: 100%;
+  width: 100%;
 }
 
 .media {

@@ -22,24 +22,32 @@
     <title>Dashboard</title>
     <link href="dashboard.css" rel="stylesheet"></link>
     <script src="wheelzoom.js"></script>
+    <script src="config.js"></script>
+    <script src="lib.js"></script>
+
     <template id="error-block">
       <div class="error-block">
       </div>
     </template>
+
     <template id="error-message">
       <div class="error error-message"></div>
     </template>
+
     <template id="feed-delim">
       <span class="feed-item" >-</a>
     </template>
+
     <template id="feed-item">
       <span class="feed-item">
         <a class="feed-item" target="_blank" href="#">No feed item title</a>
       </span>
     </template>
+
     <template id="feed-title">
       <span class="feed-title">No feed title</span>
     </template>
+
     <template id="focused-tile">
       <div class="focused-tile-container">
         <div class="tile-menu-container">
@@ -67,6 +75,7 @@
         </video>
       </div>
     </template>
+
     <template id="tile-item">
       <div class="tile-container">
         <div class="tile-menu-container">
@@ -94,13 +103,13 @@
         </video>
       </div>
     </template>
+
     <template id="user-menu-item">
       <div class="menu-item">
         <a class="menu-item" href="#"></a>
       </div>
     </template>
-    <script src="config.js"></script>
-    <script src="lib.js"></script>
+
   </head>
   <body>
 
@@ -135,8 +144,9 @@
         <div id="top-bar-right" class="top-bar-item"></div>
         <div id="global-menu-icon-container" class="top-bar-button"><a id="global-menu-icon" href="#">&#9776;</a></div>
       </div>
-      <div id="focused-container" class="focused-container hidden">
-        <iframe id="focused-iframe" class="focused-iframe hidden" src="" title=""></iframe>
+      <div id="focused-container" class="focused-container">
+        <iframe id="focused-iframe" class="focused-iframe" src="" title=""></iframe>
+        <div id="focused-tile-parent" class="focused-tile-parent"></div>
       </div>
       <div id="tiles-container" class="dashboard">
       </div>

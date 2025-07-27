@@ -64,6 +64,20 @@ async function getLatestVersion() {
   }
 }
 
+// Hide the focused-container and reset its children.
+function hideFocusedContainer() {
+  console.debug("hideFocusedContainer");
+  const container = document.getElementById("focused-container");
+  container.style.display = "none";
+  container.style.zIndex = -2;
+  const iframe = document.getElementById("focused-iframe");
+  iframe.style.display = "none";
+  iframe.style.zIndex = -2;
+  const tile = document.getElementById("focused-tile-parent");
+  tile.style.display = "none";
+  tile.style.zIndex = -2;
+}
+
 
 /* Parse an interval string and return the equivalent milliseconds
  *
@@ -121,6 +135,40 @@ function parseInterval(interval_string) {
   );
   return interval;
 }
+
+
+// Show the focused-container.
+function showFocusedContainer() {
+  console.debug("showFocusedContainer");
+  const container = document.getElementById("focused-container");
+  container.style.display = "block";
+  container.style.zIndex = 2;
+}
+
+
+// Show the focused-container and focused-iframe.
+function showFocusedIframe() {
+  showFocusedContainer();
+  const iframe = document.getElementById("focused-iframe");
+  iframe.style.display = "flex";
+  iframe.style.zIndex = 2;
+  const tile = document.getElementById("focused-tile-parent");
+  tile.style.display = "none";
+  tile.style.zIndex = -2;
+}
+
+
+// Show the focused-container and focused-tile-parent.
+function showFocusedTile() {
+  showFocusedContainer();
+  iframe = document.getElementById("focused-iframe");
+  iframe.style.display = "none";
+  iframe.style.zIndex = -2;
+  const tile = document.getElementById("focused-tile-parent");
+  tile.style.display = "block";
+  tile.style.zIndex = 2;
+}
+
 
 /* Show an error message to the user.
  *
@@ -486,6 +534,7 @@ class Config extends Item {
 
   // Initialize the dashboard.
   start() {
+    hideFocusedContainer();
     this.topBar.show();
     this.menu.hide();
     this.tiles.start();
@@ -661,31 +710,18 @@ class MenuItem extends Item {
     return fragment;
   }
 
-  defocus() {
-    const container = document.getElementById("focused-container");
-    container.style.display = "none";
-    container.style.zIndex = -2;
-    const iframe = document.getElementById("focused-iframe");
-    console.debug("MenuItem.defocus: ifame", iframe);
-    iframe.src = "about:blank";
-    iframe.title = "";
-    iframe.style.display = "none";
-  }
-
   focus() {
-    const container = document.getElementById("focused-container");
-    container.style.display = "block";
-    container.style.zIndex = 2;
+    showFocusedIframe();
     const iframe = document.getElementById("focused-iframe");
     iframe.style.transform = `scale(${this.scale})`;
-    iframe.style.display = "block";
+    iframe.style.display = "flex";
     iframe.title = this.text;
     iframe.src = this.url;
   }
 
   setCallbacks(fragment) {
     console.debug("MenuItem.setCallbacks: fragment", fragment);
-    fragment.querySelector(`#${this.id}`).onclick = (event) => {
+    fragment.getElementById(this.id).onclick = ((event) => {
       event.preventDefault();
       var menuItem = dashboard.menu.get(event.target.id);
       if (menuItem === undefined) {
@@ -694,7 +730,7 @@ class MenuItem extends Item {
       console.debug("MenuItem.onclick callback: menuItem, event", menuItem, event);
       dashboard.menu.focus(menuItem.id);
       dashboard.menu.hide();
-    }
+    });
     return fragment;
   }
 
@@ -728,20 +764,17 @@ class Menu extends Collection {
 
   childClass = MenuItem;
   id = "user-menu-container";
-  _focused = null;
 
   defocus() {
-    if (this._focused == null) {
-      return;
-    }
-    this._focused.defocus();
-    this._focused = null;
+    const iframe = document.getElementById("focused-iframe");
+    iframe.src = "about:blank";
+    iframe.title = "";
+    hideFocusedContainer();
   }
 
   focus(menuItemId) {
     this.defocus();
-    this._focused = this.get(menuItemId);
-    this._focused.focus();
+    this.get(menuItemId).focus();
   }
 
   insert() {
@@ -1162,6 +1195,9 @@ class Tile extends Item {
 
   // Show the tile menu.
   showMenu() {
+    // Hide the global menu when the tile menu icon is clicked to reduce
+    //   clutter.
+    dashboard.menu.hide();
     this.menuIconElem.onclick = ((e) => {
       dashboard.tiles.get(e.target.id).hideMenu();
     });
@@ -1278,7 +1314,7 @@ class FocusedTile extends Tile {
 
   tile;
 
-  parentContainerId = "focused-container";
+  parentContainerId = "focused-tile-parent";
   templateId = "focused-tile";
 
   postConstructor() {
@@ -1291,7 +1327,7 @@ class FocusedTile extends Tile {
     this.menuIconId = `menu-icon-${this.id}`;
     this.insert();
     this.insertMenu();
-    document.getElementById(this.parentContainerId).style.display = "block";
+    showFocusedTile();
     super.show();
   }
 
@@ -1341,6 +1377,7 @@ class FocusedTile extends Tile {
   getFocusCallback() {
     function defocus(event) {
       event.preventDefault();
+      dashboard.menu.defocus()
       dashboard.tiles.defocus();
     }
     return defocus;
@@ -1372,7 +1409,6 @@ class FocusedTile extends Tile {
 
   hide() {
     this.containerElem.remove();
-    document.getElementById(this.parentContainerId).style.display = "none";
   }
 }
 
@@ -1392,12 +1428,14 @@ class Tiles extends Collection {
   focus(tileId) {
     window.stop();
     dashboard.tiles.stop();
+    showFocusedTile();
     this.focused = FocusedTile.create({tile: this.get(tileId)});
     this.focused.show();
   }
 
   // Defocus the focused tile.
   defocus() {
+    hideFocusedContainer();
     if (this.focused != null) {
       this.focused.hide();
     }
