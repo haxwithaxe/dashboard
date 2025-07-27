@@ -66,7 +66,6 @@ async function getLatestVersion() {
 
 // Hide the focused-container and reset its children.
 function hideFocusedContainer() {
-  console.debug("hideFocusedContainer");
   const container = document.getElementById("focused-container");
   container.style.display = "none";
   container.style.zIndex = -2;
@@ -139,7 +138,6 @@ function parseInterval(interval_string) {
 
 // Show the focused-container.
 function showFocusedContainer() {
-  console.debug("showFocusedContainer");
   const container = document.getElementById("focused-container");
   container.style.display = "block";
   container.style.zIndex = 2;
@@ -720,14 +718,12 @@ class MenuItem extends Item {
   }
 
   setCallbacks(fragment) {
-    console.debug("MenuItem.setCallbacks: fragment", fragment);
     fragment.getElementById(this.id).onclick = ((event) => {
       event.preventDefault();
       var menuItem = dashboard.menu.get(event.target.id);
       if (menuItem === undefined) {
         menuItem = dashboard.menu.get(event.target.parentElement.id);
       }
-      console.debug("MenuItem.onclick callback: menuItem, event", menuItem, event);
       dashboard.menu.focus(menuItem.id);
       dashboard.menu.hide();
     });
@@ -986,7 +982,6 @@ class Tile extends Item {
     function refresh(event) {
       event.preventDefault();
       const tile = dashboard.tiles.get(event.target.id);
-      console.debug("refresh: tile", tile);
       tile.refresh();
     }
     return refresh;
@@ -997,7 +992,6 @@ class Tile extends Item {
     function rotate(event) {
       event.preventDefault();
       const tile = dashboard.tiles.get(event.target.id);
-      console.debug("rotate: tile", tile);
       tile.rotate();
     }
     return rotate;
@@ -1008,7 +1002,6 @@ class Tile extends Item {
     function showMenu(event) {
       event.preventDefault();
       const tile = dashboard.tiles.get(event.target.id);
-      console.debug("showMenu: tile", tile);
       tile.showMenu();
     }
     return showMenu;
@@ -1359,7 +1352,6 @@ class FocusedTile extends Tile {
       this.rotate();
     });
     const focusButton = this.menuElem.querySelector(".tile-focus-button");
-    console.debug("this.menuElem", this.menuElem, focusButton);
     focusButton.id = `focus-button-${this.id}`;
     focusButton.onclick = ((e) => {
       e.preventDefault();

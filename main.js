@@ -9,13 +9,11 @@ document.getElementById("refresh-button").querySelector("a").onclick = (() => {
 });
 // Back out of all alternate views on back button click.
 document.getElementById("back-button").querySelector("a").onclick = ((event) => {
-  console.debug("Clicked back-button");
   dashboard.menu.defocus();
   dashboard.menu.hide();
   dashboard.tiles.defocus();
 });
 document.getElementById("top-bar-back-button").onclick = ((event) => {
-  console.debug("Clicked back-button");
   dashboard.menu.defocus();
   dashboard.menu.hide();
   dashboard.tiles.defocus();
