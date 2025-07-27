@@ -733,7 +733,6 @@ class MenuItem extends Item {
   toSpec() {
     return {
       bgColor: this.bgColor,
-      comment: this.comment,
       order: this.order,
       scale: this.scale,
       text: this.text,
@@ -825,7 +824,6 @@ class Source extends Item {
 
   toSpec() {
     return {
-      comment: this.comment,
       iframe: this.iframe,
       mimetype: this.mimetype,
       refreshInterval: this.refreshInterval,
@@ -1256,8 +1254,8 @@ class Tile extends Item {
       title: this.title,
       fit: this.fit,
       iframe: this.iframe,
-      refresh: this.refreshInterval,
-      rotate: this.rotateInterval,
+      refreshInterval: this.refreshInterval,
+      rotateInterval: this.rotateInterval,
       scale: this.scale,
       sources: this.sources.toSpec(),
     };
