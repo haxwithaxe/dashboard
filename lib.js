@@ -966,6 +966,9 @@ class Tile extends Item {
 
   // The <source> element in the <video> element.
   get videoSource() {
+    if (this.videoElem.querySelector("source") == null) {
+      this.videoElem.appendChild(document.createElement("source"));      
+    }
     return this.videoElem.querySelector("source");
   }
 
@@ -1210,6 +1213,7 @@ class Tile extends Item {
       url = this.sources.current.url;
     }
     this.videoElem.classList.remove("hidden");
+    this.videoSource.remove();  // Remove the source to get it to reload correctly
     this.videoSource.src = url;
     if (this.sources.current.mimetype == null) {
       if (url.includes(".mp4")) {
