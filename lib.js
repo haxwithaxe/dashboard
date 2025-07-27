@@ -209,32 +209,6 @@ function stopTiles() {
 }
 
 
-// A common time source to synchronize seconds.
-class TimeSource {
-
-  constructor() {
-    this.#now = new Date();
-  }
-
-  get now() {
-    return new Date(this.#now.valueOf());
-  }
-    
-  // Update the shared Date object if needed.
-  update() {
-    const newNow = new Date();
-    if (newNow.getSeconds() - this.#now.getSeconds() > 0.1) {
-      this.#now = newNow;
-    }
-  }
-
-  #now;
-}
-
-
-const sharedTime = new TimeSource();
-
-
 // Base class that sort of mimics python's dataclass.
 class Item {
 
@@ -1525,13 +1499,13 @@ class TopBarLeft extends TopBarPart {
 
   // Returns the formatted local date and time.
   getText() {
-    sharedTime.update();
-    const localDate = sharedTime.now.toLocaleDateString("en-US", {
+    const now = new Date();
+    const localDate = now.toLocaleDateString("en-US", {
       weekday: "long",
       month: "long",
       day: "numeric",
     });
-    const localTime = sharedTime.now.toLocaleTimeString("en-US", {
+    const localTime = now.toLocaleTimeString("en-US", {
       hour12: false,
       hour: "2-digit",
       minute: "2-digit",
@@ -1565,9 +1539,9 @@ class TopBarRight extends TopBarPart {
 
   // Returns the formatted UTC date and time.
   getText() {
-    sharedTime.update();
-    const utcDate = sharedTime.now.toISOString().slice(0, 10);
-    const utcTime = sharedTime.now.toISOString().slice(11, 19) + " UTC";
+    const now = new Date();
+    const utcDate = now.toISOString().slice(0, 10);
+    const utcTime = now.toISOString().slice(11, 19) + " UTC";
     return `${utcDate} ${utcTime}`;
   }
 }
