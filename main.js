@@ -14,6 +14,12 @@ document.getElementById("back-button").querySelector("a").onclick = ((event) => 
   dashboard.menu.hide();
   dashboard.tiles.defocus();
 });
+document.getElementById("top-bar-back-button").onclick = ((event) => {
+  console.debug("Clicked back-button");
+  dashboard.menu.defocus();
+  dashboard.menu.hide();
+  dashboard.tiles.defocus();
+});
 // Show help popup on help button click.
 // FIXME Implement dashboard.popup().
 // FIXME Implement helpText.
