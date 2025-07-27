@@ -1278,14 +1278,16 @@ class Tile extends Item {
   }
 
   setRefreshTimeout() {
-    if (this.sources.current.refreshInterval != null && this.sources.current.refreshInterval > 0) {
-      this.refreshTimeoutRef = setInterval(() => this.getRefreshCallback(), parseInterval(this.refreshInterval));
+    const interval = parseInterval(this.sources.current.refreshInterval);
+    if (interval > 0) {
+      this.refreshTimeoutRef = setInterval((() => this.refresh()), parseInterval(interval));
     }
   }
 
   setRotateTimeout() {
-    if (this.sources.current.rotateInterval != null && this.sources.current.rotateInterval > 0) {
-      this.rotateTimeoutRef = setInterval(() => this.getRotateCallback(), parseInterval(this.rotateInterval));
+    const interval = parseInterval(this.sources.current.rotateInterval);
+    if (interval > 0) {
+      this.rotateTimeoutRef = setInterval((() => this.rotate()), interval);
     }
   }
 
