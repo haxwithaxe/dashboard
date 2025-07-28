@@ -22,6 +22,7 @@ function createFromTemplate(id) {
   return templateElem.content.cloneNode(true);
 }
 
+
 // Check for updates on github.
 async function checkForUpdates() {
   const latestVersion = await getLatestVersion();
@@ -156,6 +157,7 @@ async function getLatestVersion() {
   }
 }
 
+
 // Hide the focused-container and reset its children.
 function hideFocusedContainer() {
   const container = document.getElementById("focused-container");
@@ -273,6 +275,7 @@ function showGlobalError(text) {
   errorElem.classList.remove("hidden");
 }
 
+
 /* Sort items by order.
  *
  * Negative values of `order` are treated like negative indexes.
@@ -288,16 +291,6 @@ function sortCompareOrder(a, b) {
     return 1;
   }
   return a.order - b.order;
-}
-
-
-function startTiles() {
-  dashboard.tiles.show();
-}
-
-
-function stopTiles() {
-  dashboard.tiles.stop();
 }
 
 
@@ -744,6 +737,7 @@ class Feed extends Item {
   }
 }
 
+
 // Collection of Feed Items.
 class Feeds extends UrlCollection {
 
@@ -843,6 +837,7 @@ class MenuItem extends Item {
     }
   }
 }
+
 
 // A collection of user menu items.
 class Menu extends Collection {
