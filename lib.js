@@ -16,7 +16,9 @@ const videoExtensions = [".mp4", ".webm", ".ogg", ".ogv"];
 function createFromTemplate(id) {
   const templateElem = document.getElementById(id);
   // Strip leading and trailing whitespace to avoid extra empty text nodes
-  templateElem.innerHTML = templateElem.innerHTML.replace(/^[ \t\n\r]+/, "").replace(/[ \t\n\r]+$/, "");
+  templateElem.innerHTML = templateElem.innerHTML
+    .replace(/^[ \t\n\r]+/, "")
+    .replace(/[ \t\n\r]+$/, "");
   return templateElem.content.cloneNode(true);
 }
 
@@ -107,8 +109,14 @@ function getDateFormatter(formatStr, timezone, locale) {
  *   An object with date and time parts as strings.
  */
 function getDateParts(date, timezone, locale) {
-  const tzDate = new Date(date.toLocaleString(locale, {timeZone: timezone, timeZoneName: "short"}));
-  const localeString = ((options, override) => tzDate.toLocaleString(override !== undefined ? override : locale, Object.assign({timeZone: timezone}, options)));
+  const tzDate = new Date(date.toLocaleString(
+    locale,
+    {timeZone: timezone, timeZoneName: "short"}
+  ));
+  const localeString = ((options, override) => tzDate.toLocaleString(
+    override !== undefined ? override : locale,
+    Object.assign({timeZone: timezone}, options)
+  ));
   const parts = {
     year4: localeString({year: "numeric"}),
     year2: localeString({year: "2-digit"}),
@@ -134,6 +142,8 @@ function getDateParts(date, timezone, locale) {
   }
   return parts;
 }
+
+
 // Get the latest version number of this application.
 async function getLatestVersion() {
   try {
@@ -305,7 +315,10 @@ class Item {
     if (defaults !== undefined) {
       values = Object.assign({}, defaults);
     }
-    values = Object.assign(Object.assign(values, spec), {_defaults: defaults, _spec: spec});
+    values = Object.assign(
+      Object.assign(values, spec),
+      {_defaults: defaults, _spec: spec}
+    );
     const sealed = Object.assign(Object.create(this.prototype), new this(Item));
     const newObj = Object.assign(sealed, values);
     newObj.postConstructor();
@@ -314,7 +327,9 @@ class Item {
 
   constructor(values) {
     if (!values instanceof Item) {
-      throw new Error(`Use ${this.constructor.name}.create(...) instead of new operator`);
+      throw new Error(
+        `Use ${this.constructor.name}.create(...) instead of new operator`
+      );
     }
   }
 
@@ -620,10 +635,16 @@ class Feed extends Item {
     this.parentContainerId = "feeds-container";
     this.templateId = "feed-item";
     if (this.url === undefined) {
-      console.error("Missing 'url' option in the following feed configuration", config);
+      console.error(
+        "Missing 'url' option in the following feed configuration",
+        config
+      );
     }
     super.postConstructor();
-    this.refreshTimeoutRef = setInterval((() => this.fetch()), parseInterval(this.refreshInterval));
+    this.refreshTimeoutRef = setInterval(
+      (() => this.fetch()),
+      parseInterval(this.refreshInterval)
+    );
     this.fetch();
   }
 
@@ -652,15 +673,20 @@ class Feed extends Item {
     if (feedXml.querySelector("entry")) {
       itemTag = "entry"; // Switch to Atom if "entry" is found
     }
-    const feedTitleText = feedXml.querySelector("channel > title, feed > title")?.textContent || "Unknown Feed";
-    const lastUpdated = feedXml.querySelector("channel > lastBuildDate, feed > updated")?.textContent || "Unknown Time";
+    const feedTitleText = feedXml.querySelector(
+      "channel > title, feed > title"
+    )?.textContent || "Unknown Feed";
+    const lastUpdated = feedXml.querySelector(
+      "channel > lastBuildDate, feed > updated"
+    )?.textContent || "Unknown Time";
     const feedItems = feedXml.querySelectorAll(itemTag);
     const feedText = [];
     const feedTitle = createFromTemplate("feed-title");
     if (this.titleTextColor != null) {
       feedTitle.style.color = this.titleTextColor;
     }
-    feedTitle.children[0].textContent = `${feedTitleText} - Last Updated: ${lastUpdated} -`;
+    feedTitle.children[0].textContent = 
+      `${feedTitleText} - Last Updated: ${lastUpdated} -`;
     feedElems.push(feedTitle);
     feedItems.forEach((item) => {
       // Handle both <link href="..."> and <link>...</link>
@@ -690,7 +716,9 @@ class Feed extends Item {
       delimElem.color = this.textColor;
     }
     feedElems.push(delimElem);
-    this.containerElem.childNodes.forEach((child) => this.containerElem.removeChild(child));
+    this.containerElem.childNodes.forEach(
+      (child) => this.containerElem.removeChild(child)
+    );
     feedElems.forEach((item) => this.containerElem.appendChild(item));
     // Detect a failure to load all feeds
     //   Do this here because the fetching is asynchronous
@@ -724,7 +752,10 @@ class Feeds extends UrlCollection {
 
   fetch() {
     this.children.forEach((child) => child.fetch());
-    this.containerElem.style.setProperty("--ticker-duration", `${this._defaults.scrollSpeed}s`);
+    this.containerElem.style.setProperty(
+      "--ticker-duration",
+      `${this._defaults.scrollSpeed}s`
+    );
   }
 }
 
@@ -873,9 +904,14 @@ class Source extends Item {
 
   postConstructor() {
     if (this.url === undefined) {
-      console.error("Missing 'url' option in the following config.", this.args.config);
+      console.error(
+        "Missing 'url' option in the following config.",
+        this.args.config
+      );
     }
-    if (parseInterval(this.rotateInterval) <= parseInterval(this.refreshInterval)) {
+    if (
+      parseInterval(this.rotateInterval) <= parseInterval(this.refreshInterval)
+    ) {
       this.refreshInterval = null;
     }
     super.postConstructor();
@@ -1079,7 +1115,11 @@ class Tile extends Item {
    *   the tile's title.
    */
   getTitle() {
-    if (this.sources.current.title != null && this.sources.current.title != "" && this.sources.current.title !== undefined) {
+    if (
+      this.sources.current.title != null 
+      && this.sources.current.title != "" 
+      && this.sources.current.title !== undefined
+    ) {
       return this.sources.current.title;
     } else if (this.title != null && this.title != "" && this.title !== undefined) {
       return this.title;
@@ -1243,11 +1283,19 @@ class Tile extends Item {
       } else {
         el = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="330">
           <g>
-            <text style="font-size:34px; line-height:1.25; white-space:pre; fill:#ffaa00; fill-opacity:1; stroke:#ffaa00; stroke-opacity:1;">
+            <text 
+            style="font-size:34px; 
+              line-height:1.25; 
+              white-space:pre; 
+              fill:#ffaa00; 
+              fill-opacity:1; 
+              stroke:#ffaa00; 
+              stroke-opacity:1;"
+            >
               <tspan x="100" y="150">${text}</tspan>
-              </text>
-              </g>
-              </svg>`;
+            </text>
+          </g>
+        </svg>`;
         this.imageElem.src = "data:image/svg+xml;base64," + window.btoa(el);
       }
     };
@@ -1346,7 +1394,10 @@ class Tile extends Item {
   setRefreshTimeout() {
     const interval = parseInterval(this.sources.current.refreshInterval);
     if (interval > 0) {
-      this.refreshTimeoutRef = setInterval((() => this.refresh()), parseInterval(interval));
+      this.refreshTimeoutRef = setInterval(
+        (() => this.refresh()),
+        parseInterval(interval)
+      );
     }
   }
 
@@ -1404,7 +1455,10 @@ class FocusedTile extends Tile {
   }
 
   insertMenu() {
-    document.querySelector(`#${this.id}`).querySelector(".tile-menu").id = this.menuId;
+    document
+      .querySelector(`#${this.id}`)
+      .querySelector(".tile-menu")
+      .id = this.menuId;
     const refreshButton = this.menuElem.querySelector(".tile-refresh-button");
     refreshButton.id = `refresh-button-${this.id}`;
     refreshButton.onclick = ((e) => {
@@ -1568,7 +1622,11 @@ class TopBarPart extends Item {
     if (this.dateFormat.toLowerCase() == "iso") {
       this._dateFormatter = ((date) => date.toISOString());
     } else {
-      this._dateFormatter = getDateFormatter(this.dateFormat, this.dateFormatTimeZone, this.dateFormatLocale);
+      this._dateFormatter = getDateFormatter(
+        this.dateFormat,
+        this.dateFormatTimeZone,
+        this.dateFormatLocale
+      );
     }
   }
 

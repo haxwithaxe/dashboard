@@ -21,20 +21,22 @@ document.getElementById("top-bar-back-button").onclick = ((event) => {
 // Show help popup on help button click.
 // FIXME Implement dashboard.popup().
 // FIXME Implement helpText.
-document.getElementById("help-button").querySelector("a").onclick = (() => dashboard.popup(helpText));
+document
+  .getElementById("help-button")
+  .querySelector("a")
+  .onclick = (() => dashboard.popup(helpText));
 // Prep update button.
 const updateButton = document.getElementById("update-button");
 updateButton.querySelector("a").href = projectReleasesUrl;
 updateButton.querySelector("a").target = "_blank";
 // Reload on window resize.
-window.addEventListener("resize", function () {
-  window.location.reload();
-});
+window.addEventListener("resize", (() => window.location.reload()));
 // Load Initial Data
 dashboard.start();
 // Show global menu on menu button click.
-document.getElementById("global-menu-icon").onclick = (() => dashboard.menu.show());
-
+document.getElementById("global-menu-icon").onclick = (
+  () => dashboard.menu.show()
+);
 var layoutFeedOffset = dashboard.feeds.length > 0 ? 2 : 0;
 var layoutGrid = "auto ".repeat(dashboard.columns);
 var layoutWidth = 99.6 / dashboard.columns + "vw";
