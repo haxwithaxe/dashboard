@@ -52,6 +52,88 @@ function generateId(uniquish) {
   return "id" + hash.toString() + randomInt(1000).toString();
 }
 
+
+/* Get a function that formats dates like C's strftime.
+ *
+ * Arguments:
+ *   formatStr (string): A string with C strftime style format codes.
+ *   timezone (string, optional): IANA time zone string. For example 
+ *     "America/New_York" or "Etc/UTC".
+ *   locale (string, optional): A locale string. For example "en-US".
+ *
+ * Returns:
+ *   A function that formats the time (Date object) given as the argument.
+ */
+function getDateFormatter(formatStr, timezone, locale) {
+  return ((date) => {
+    const parts = getDateParts(date, timezone, locale);
+    return (formatStr
+      .replace("%Y", parts.year4)
+      .replace("%y", parts.year2)
+      .replace("%m", parts.month)
+      .replace("%e", parts.monthNum)
+      .replace("%b", parts.monthNameAbrv)
+      .replace("%B", parts.monthName)
+      .replace("%A", parts.dayName)
+      .replace("%a", parts.dayNameAbrv)
+      .replace("%d", parts.day)
+      .replace("%e", parts.dayNum)
+      .replace("%H", parts.hours)
+      .replace("%k", parts.hoursNum)
+      .replace("%I", parts.hours12)
+      .replace("%l", parts.hours12Num)
+      .replace("%M", parts.minutes)
+      .replace("%S", parts.seconds)
+      .replace("%F", `${parts.year4}-${parts.month}-${parts.day}`)
+      .replace("%T", `${parts.hours}:${parts.minutes}:${parts.seconds}`)
+      .replace("%R", `${parts.hours12}:${parts.minutes}`)
+      .replace("%r", `${parts.hours12}:${parts.minutes}:${parts.seconds}`)
+      .replace("%p", parts.amPm)
+      .replace("%P", parts.amPm.toLowerCase())
+      .replace("%Z", parts.timezone));
+  });
+}
+
+
+/* Get the various parts of the date and time.
+ *
+ * Arguments:
+ *   date (Date): A Date object.
+ *   timezone (string, optional): IANA time zone string. For example 
+ *     "America/New_York" or "Etc/UTC".
+ *   locale (string, optional): A locale string. For example "en-US".
+ *
+ * Returns:
+ *   An object with date and time parts as strings.
+ */
+function getDateParts(date, timezone, locale) {
+  const tzDate = new Date(date.toLocaleString(locale, {timeZone: timezone, timeZoneName: "short"}));
+  const localeString = ((options, override) => tzDate.toLocaleString(override !== undefined ? override : locale, Object.assign({timeZone: timezone}, options)));
+  const parts = {
+    year4: localeString({year: "numeric"}),
+    year2: localeString({year: "2-digit"}),
+    month: localeString({month: "2-digit"}),
+    monthNum: localeString({month: "numeric"}),
+    monthName: localeString({month: "long"}), 
+    monthNameAbrv: localeString({month: "short"}), 
+    day: localeString({day: "2-digit"}),
+    dayNum: localeString({day: "numeric"}),
+    dayName: localeString({weekday: "long"}),
+    dayNameAbrv: localeString({weekday: "short"}),
+    hours: localeString({hour: "2-digit", hour12: false}),
+    hoursNum: localeString({hour: "numeric", hour12: false}),
+    hours12: localeString({hour: "2-digit", hour12: true}),
+    hours12Num: localeString({hour: "numeric", hour12: true}),
+    minutes: localeString({minute: "2-digit"}),
+    seconds: localeString({second: "2-digit"}),
+    amPm: localeString({hour12: true}).split(" ").slice(-1)[0],
+    timezone: localeString({timeZoneName: "short"}, "en-US").slice(-3),
+  };
+  if (typeof timezone == "string" && timezone.toLowerCase().slice(-3) == "utc") {
+    parts.timezone = "UTC";
+  }
+  return parts;
+}
 // Get the latest version number of this application.
 async function getLatestVersion() {
   try {
@@ -466,10 +548,11 @@ class UrlCollection extends Collection {
 /* Dashboard class
  * 
  * Attributes:
- *   columns (Integer): FIXME Defaults to 4.
- *   rows (Integer): FIXME Defaults to 3.
- *   feedScrollSpeed (Number): FIXME Defaults to 180.
- *   menu (Menu): The user defined menus.
+ *   columns (Integer): The number of columns in the tile grid. Defaults to 4.
+ *   rows (Integer): The number of rows in the tile grid. Defaults to 3.
+ *   feedScrollSpeed (Number): The scroll speed of the feed ticker in pixels
+ *     per second. Defaults to 180.
+ *   menu (Menu): The user defined menu items.
  *   feeds (Feeds): The Collection of feeds.
  *   tiles (Tiles): The Collection of tiles.
  *   topBar (TopBar): The top bar.
@@ -519,9 +602,11 @@ class Config extends Item {
  * Attributes:
  *   url (string): RSS or Atom feed URL.
  *   bgColor (HTML color code, optional): Override the feed background color.
- *   refreshInterval (interval, optional): The interval between refreshing the feed. Defaults to "1h".
+ *   refreshInterval (interval, optional): The interval between refreshing the 
+ *     feed. Defaults to "1h".
  *   textColor (HTML color code, optional): Override the feed text color.
- *   titleTextColor (HTML color code, optional): Override the feed title text color.
+ *   titleTextColor (HTML color code, optional): Override the feed title text
+ *     color.
  */
 class Feed extends Item {
 
@@ -650,7 +735,7 @@ class Feeds extends UrlCollection {
  *   text (string): The text of the menu button.
  *   bgColor (HTML color code, optional): Override menu button background color.
  *   order (Number, optional): Specify the order to display the button.
- *   scale (Number, optional): FIXME
+ *   scale (Number, optional): CSS transform scale. Defaults to 1.
  *   textColor (HTML color code, optional): Override menu button text color.
  *   url (string, optional): The target URL. Defaults to "#".
  */
@@ -768,11 +853,15 @@ class Menu extends Collection {
 /* A Tile source.
  *
  * Attributes:
- *   iframe (boolean): If true the source is displayed as an iFrame.
- *   mimetype (string): Override the detected mimetype of the source if it is a video.
- *   refreshInterval (interval): FIXME.
- *   rotateInterval (interval): FIXME.
  *   url (string): A URL to display. 
+ *   iframe (boolean, optional): If true the source is displayed as an iFrame. 
+ *     Defaults to false.
+ *   mimetype (string, optional): Override the detected mimetype of the source 
+ *     if it is a video.
+ *   refreshInterval (interval, optional): The refresh interval for the source.
+ *     Defaults to the Tile's refreshInterval or "5m".
+ *   rotateInterval (interval, optional): The rotate interval for the source.
+ *     Defaults to the Tile's rotateInterval or "5m".
  */
 class Source extends Item {
 
@@ -838,11 +927,16 @@ class Sources extends UrlCollection {
 /* Dashboard tile config and display.
  * 
  * Attributes:
- *   fit (string): FIXME. Valid values if set are "both", "width", "height".
- *   iframe: FIXME
- *   refreshInterval (interval): Defaults to "5m".
- *   rotateInterval (interval): Defaults to "5m".
- *   scale (Number): FIXME. Defaults to 1;
+ *   fit (string, optional): Stretch each source to fit in the tile. Valid 
+ *     values if set are "both", "width", "height". Defaults to "width".
+ *   iframe (boolean, optional): If true the tile is displayed as an iFrame by
+ *     default. Defaults to false.
+ *   refreshInterval (interval, optional): The default refreshInterval for the 
+ *     tile. Defaults to "5m".
+ *   rotateInterval (interval, optional): The default rotateInterval for the 
+ *     tile. Defaults to "5m".
+ *   scale (Number, optional): The default CSS transform scale for the tile.
+ *     Defaults to 1.
  *   title: The title to display over a tile if set.
  */
 class Tile extends Item {
@@ -1144,7 +1238,7 @@ class Tile extends Item {
       text = "Failed to load image";
       if (url.includes("?")) {
         // Retry without passing variables first to see if fixes the error
-        console.log("Trying without caching prevention");
+        console.info("Trying without caching prevention");
         this.imageElem.src = url.split("?")[0];
       } else {
         el = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="330">
@@ -1461,6 +1555,22 @@ class TopBarPart extends Item {
   text = null;
   textColor = null;
   bgColor = null;
+  dateFormat = null;
+  dateFormatLocale;
+  dateFormatTimeZone;
+
+  _dateFormatter;
+
+  postConstructor() {
+    if (typeof this.dateFormat != "string") {
+      return;
+    }
+    if (this.dateFormat.toLowerCase() == "iso") {
+      this._dateFormatter = ((date) => date.toISOString());
+    } else {
+      this._dateFormatter = getDateFormatter(this.dateFormat, this.dateFormatTimeZone, this.dateFormatLocale);
+    }
+  }
 
   insert() {
     return;
@@ -1468,7 +1578,10 @@ class TopBarPart extends Item {
 
   // Returns the text to display in the top bar part.
   getText() {
-    return this.text;
+    if (this._dateFormatter === undefined) {
+      return this.text;
+    }
+    return this._dateFormatter(new Date());
   }
 
   // Show the TopBar part.
@@ -1496,24 +1609,7 @@ class TopBarLeft extends TopBarPart {
   bgColor = null;
 
   id = "top-bar-left"; 
-
-  // Returns the formatted local date and time.
-  getText() {
-    const now = new Date();
-    const localDate = now.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-    });
-    const localTime = now.toLocaleTimeString("en-US", {
-      hour12: false,
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      timeZoneName: "short",
-    });
-    return `${localDate} - ${localTime}`;
-  }
+  dateFormat = "%A, %B %d - %H:%M:%S %Z"
 }
 
 
@@ -1536,14 +1632,8 @@ class TopBarRight extends TopBarPart {
   bgColor = null;
 
   id = "top-bar-right"; 
-
-  // Returns the formatted UTC date and time.
-  getText() {
-    const now = new Date();
-    const utcDate = now.toISOString().slice(0, 10);
-    const utcTime = now.toISOString().slice(11, 19) + " UTC";
-    return `${utcDate} ${utcTime}`;
-  }
+  dateFormat = "%Y-%m-%d - %H:%M:%S %Z";
+  dateFormatTimeZone = "Etc/UTC";
 }
 
 /* Top bar configuration and display.
