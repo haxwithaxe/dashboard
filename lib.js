@@ -576,10 +576,10 @@ class Config extends Item {
   topBar = {};
 
   postConstructor() {
+    this.topBar = TopBar.create(this.topBar);
     this.menu = Menu.create(this.menu);
     this.feeds = Feeds.create(this.feeds, {scrollSpeed: this.feedScrollSpeed});
     this.tiles = Tiles.create(this.tiles);
-    this.topBar = TopBar.create(this.topBar);
   }
 
   toSpec() {
@@ -1027,6 +1027,10 @@ class Tile extends Item {
     this.insertMenu();
   }
 
+  get errorElem() {
+    return this.containerElem.querySelector(".tile-error");
+  }
+
   // The image element.
   get imageElem() {
     return document.getElementById(this.imageId);
@@ -1245,6 +1249,29 @@ class Tile extends Item {
     }
   }
 
+  /* Show an error in the tile.
+   *
+   * Arguments:
+   *   text (string): The user friendly text of the error.
+   *   detail (string, optional): The random garbage to help identify what
+   *     exactly happened.
+   *
+   */
+  showError(text, detail) {
+    this.errorElem.querySelector(".tile-error-text").textContent = text;
+    if (detail !== undefined && detail != null && detail != "") {
+      this.errorElem.querySelector(".tile-error-detail-container").classList.remove("hidden");
+      this.errorElem.querySelector(".tile-error-detail").textContent = detail;
+    } else {
+      this.errorElem.querySelector(".tile-error-detail-container").classList.add("hidden");
+      this.errorElem.querySelector(".tile-error-detail").textContent = "";
+    } 
+    this.errorElem.classList.remove("hidden");
+    this.iframeElem.classList.add("hidden");
+    this.imageElem.classList.add("hidden");
+    this.videoElem.classList.add("hidden");
+  }
+
   // Show the URL in an iFrame in the tile.
   showIframe(url) {
     if (url === undefined) {
@@ -1256,6 +1283,7 @@ class Tile extends Item {
       this.iframeElem.style.transform = `scale(${this.scale})`;
     }
     this.iframeElem.style.zIndex = 0;
+    this.errorElem.classList.add("hidden");
     this.imageElem.classList.add("hidden");
     this.videoElem.classList.add("hidden");
   }
@@ -1269,31 +1297,19 @@ class Tile extends Item {
     // Image cache prevention
     // Check if the image URL already include parameters, then avoid the random timestamp
     this.imageElem.src = url.includes("?") ? url : url + "?_=" + Date.now();
-    this.imageElem.onerror = function () {
-      text = "Failed to load image";
-      if (url.includes("?")) {
+    this.imageElem.onerror = (() => {
+      // The event for img.onerror doesn't give any info about the request so
+      //   not bothering with it.
+      if (this.imageElem.src != url) {
         // Retry without passing variables first to see if fixes the error
-        console.info("Trying without caching prevention");
-        this.imageElem.src = url.split("?")[0];
+        console.info("Trying without caching prevention", url);
+        this.imageElem.src = url;
       } else {
-        el = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="330">
-          <g>
-            <text 
-            style="font-size:34px; 
-              line-height:1.25; 
-              white-space:pre; 
-              fill:#ffaa00; 
-              fill-opacity:1; 
-              stroke:#ffaa00; 
-              stroke-opacity:1;"
-            >
-              <tspan x="100" y="150">${text}</tspan>
-            </text>
-          </g>
-        </svg>`;
-        this.imageElem.src = "data:image/svg+xml;base64," + window.btoa(el);
+        console.error("Error loading image", url);
+        this.showError("Failed to load image.", `Image URL: ${url}`);
       }
-    };
+    });
+    this.errorElem.classList.add("hidden");
     this.iframeElem.classList.add("hidden");
     this.videoElem.classList.add("hidden");
   }
@@ -1330,6 +1346,7 @@ class Tile extends Item {
     } else {
       this.videoSource.type = this.sources.current.mimetype;
     }
+    this.errorElem.classList.add("hidden");
     this.iframeElem.classList.add("hidden");
     this.imageElem.classList.add("hidden");
   }

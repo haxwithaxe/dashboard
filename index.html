@@ -68,10 +68,27 @@
           </div>
         </div>
         <div class="tile-title"></div>
+        <div class="tile-error focused-tile-error error hidden">
+          <div class="tile-error-text"></div>
+          <div class="tile-error-detail-container hidden">
+            <div class="tile-error-detail-label">Details</div>
+            <div class="tile-error-detail"></div>
+          </div>
+        </div>
         <iframe class="focused-tile-iframe hidden"></iframe>
         <img class="focused-tile-image hidden"></img>
         <video class="focused-tile-video media hidden" controls="true" autoplay="true" loop="true">
         </video>
+      </div>
+    </template>
+
+    <template id="popup">
+      <div class="popup-container">
+        <div class="popup-label"></div>
+        <div class="popup-body"></div>
+        <div class="popup-button">
+          <a class="popup-button button"href="#">Close</a>
+        </div>
       </div>
     </template>
 
@@ -95,6 +112,13 @@
           </div>
         </div>
         <div class="tile-title"></div>
+        <div class="tile-error error hidden">
+          <div class="tile-error-text"></div>
+          <div class="tile-error-detail-container hidden">
+            <div class="tile-error-detail-label">Details</div>
+            <div class="tile-error-detail"></div>
+          </div>
+        </div>
         <iframe class="tile-iframe hidden"></iframe>
         <img class="tile-image hidden"></img>
         <video class="tile-video media hidden" controls="true" autoplay="true" loop="true">
@@ -110,6 +134,8 @@
 
   </head>
   <body>
+
+    <div id="popup-container" class="popup-container hidden"></div>
 
     <div id="menu-container" class="menu-container">
       <div id="menu" class="menu">

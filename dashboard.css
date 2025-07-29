@@ -146,6 +146,36 @@ body, html {
   position: relative;
 }
 
+.tile-error {
+  position: absolute;
+  text-align: center;
+  color: goldenrod;
+  top: 30%;
+  left: 10%;
+  right: 10%;
+}
+
+.tile-error-text {
+  font-size: large;
+  font-weight: bold;
+  margin-bottom: 1em;
+}
+
+.tile-error-detail {
+  font-family: monospace;
+  font-size: small;
+  padding: 1em;
+  text-align: left;
+  text-indent: -2em;
+  margin-left: 2em;
+}
+
+.tile-error-detail-container {
+  background-color: #222222;
+  padding: 0.1em;
+  border-radius: 1em;
+}
+
 .tile-menu-container, .focused-tile-menu-container {
   display: grid;
   height: auto;
