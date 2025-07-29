@@ -1,4 +1,6 @@
-
+const helpText = `
+FIXME Write something helpful!
+`
 // Load from value in config.js
 window.dashboard = Config.create(userSettings);
 
@@ -19,12 +21,13 @@ document.getElementById("top-bar-back-button").onclick = ((event) => {
   dashboard.tiles.defocus();
 });
 // Show help popup on help button click.
-// FIXME Implement dashboard.popup().
-// FIXME Implement helpText.
 document
   .getElementById("help-button")
   .querySelector("a")
-  .onclick = (() => dashboard.popup(helpText));
+  .onclick = (() => {
+    dashboard.popup("Help", helpText);
+    dashboard.menu.hide();
+  });
 // Prep update button.
 const updateButton = document.getElementById("update-button");
 updateButton.querySelector("a").href = projectReleasesUrl;

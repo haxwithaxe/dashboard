@@ -580,6 +580,11 @@ class Config extends Item {
     this.menu = Menu.create(this.menu);
     this.feeds = Feeds.create(this.feeds, {scrollSpeed: this.feedScrollSpeed});
     this.tiles = Tiles.create(this.tiles);
+    this._popup = PopUp.create();
+  }
+
+  popup(label, message) {
+    this._popup.show(label, message);
   }
 
   toSpec() {
@@ -875,6 +880,34 @@ class Menu extends Collection {
   }
 }
 
+
+class PopUp extends Item {
+
+  templateId = "popup";
+  parentContainerId = "popup-container";
+
+  insert() {
+    return;
+  }
+
+  hide() {
+    if (this.containerElem === undefined) {
+      return;
+    }
+    this.containerElem.remove();
+    document.getElementById(this.parentContainerId).style.display = "none";
+  }
+
+  show(label, message) {
+    super.insert();
+    this.containerElem.querySelector(".popup-label").innerHTML = label;
+    this.containerElem.querySelector(".popup-body").innerHTML = message;
+    this.containerElem.querySelector(".button").onclick = (() => this.hide());
+    const parentElem = document.getElementById(this.parentContainerId);
+    parentElem.style.display = "block";
+    parentElem.style.zIndex = 20;
+  }
+}
 
 /* A Tile source.
  *
