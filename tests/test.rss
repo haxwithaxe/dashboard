@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+	<channel>
+		<title>Test RSS Feed</title>
+		<link>http://localhost:8000/test.rss</link>
+		<description>Test RSS fee description</description>
+		<lastBuildDate>Thu, 1 Jan 1970 00:00:00 +0000</lastBuildDate>
+		<item>
+			<title>Test RSS #1 Title</title>
+			<description>Test #1 description</description>
+			<guid>1</guid>
+			<pubDate>Thu, 1 Jan 1970 00:00:00 +0000</pubDate>
+		</item>
+		<item>
+			<title>Test RSS #2 Title</title>
+			<description>Test #2 description</description>
+			<guid>2</guid>
+			<pubDate>Thu, 1 Jan 1970 00:00:00 +0000</pubDate>
+		</item>
+		<item>
+			<title>Test RSS #3 Title</title>
+			<description>Test #3 description</description>
+			<guid>3</guid>
+			<pubDate>Thu, 1 Jan 1970 00:00:00 +0000</pubDate>
+		</item>
+	</channel>
+</rss>
+

@@ -1,0 +1,482 @@
+body, html {
+  background: black;
+  font-size: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  height: 100%;
+  margin: 0;
+  justify-content: center;
+  align-items: center;
+  font-family: sans-serif;
+}
+
+
+.popup {
+  display: flex-root;
+}
+
+.popup-container {
+  position: absolute;
+  top: 30%;
+  left: 30%;
+  right: 30%;
+  bottom: 30%;
+  background-color: darkslategrey;
+  color: white;
+  border-radius: 1em;
+  height: max-content;
+  display: block;
+} 
+
+.popup-label {
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0.8em;
+  font-size: x-large;
+}
+
+.popup-body {
+  align-content: center;
+  justify-content: center;
+  text-indent: -2em;
+  margin-left: 2em;
+  padding: 1em;
+  display: flex;
+}
+
+.popup-button-container {
+  align-content: center;
+  bottom: 0.5em;
+  display: block;
+  background-color: #00000099;
+  border-radius: 1em;
+  width: max-content;
+  padding-left: 1em;
+  padding-right: 1em;
+  margin-left: 42%;
+  margin-bottom: 1em;
+  margin-top: 1em;
+}
+
+.popup-button {
+  color: white;
+  text-decoration: none;
+}
+
+.button {
+  text-decoration: none;
+}
+
+.top-bar-button {
+  background: #333333;
+  border-radius: 0.7em;
+  border: 0.3em solid slategrey;
+  display: grid;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+}
+
+.top-bar-button a {
+  color: slategrey;
+  font-family: sans-serif;
+  font-size: 2em;
+  text-decoration: none;
+  width: auto;
+}
+
+#top-bar-left {
+  color: blanchedalmond;
+  padding-left: 0.7em;
+  text-align: left;
+}
+
+#top-bar-center {
+  color: lightgrey;
+  text-align: center;
+}
+
+#top-bar-right {
+  color: aquamarine;
+  padding-right: 0.7em;
+  text-align: right;
+}
+
+.error-block {
+  background-color: darkred;
+  border: 0.5em red;
+  color: white;
+}
+
+.iframe-container {
+  background-color: black;
+  border: 0em none;
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  z-index: -2;
+  justify-content: center;
+  align-items: center;
+}
+
+#focused-iframe {
+  background-color: black;
+  border: 0em none;
+  height: 100%;
+  width: 100%;
+  margin: 0em;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  float: inline-start;
+  position: relative;
+  -ms-zoom: 1;
+  -moz-transform: scale(1);
+  -moz-transform-origin: 0 0;
+  -o-transform: scale(1);
+  -o-transform-origin: 0 0;
+  -webkit-transform: scale(1);
+  -webkit-transform-origin: 0 0;
+}
+
+.default-frame {
+  margin-top: 0em;
+  margin-bottom: 0em;
+  margin-left: 0em;
+  left: 0em;
+  top: 0em;
+  border: 0em none;
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  overflow: hidden;
+  bottom: 0em;
+}
+
+.top-bar {
+  display: grid;
+  grid-template-columns: 4em 2fr 1fr 2fr 4em;
+  background-color: #333333;
+  color: white;
+  padding: 1vh;
+  border: 0em none;
+  overflow: hidden;
+  position: relative;
+  width: auto;
+}
+
+.top-bar-item {
+  background: #333333;
+  border-radius: 1em;
+  border: 0.2em solid slategrey;
+  color: white;
+  display: grid;
+  font-family: sans-serif;
+  font-size: 1.5em;
+  padding: 0.5vh;
+  position: relative;
+}
+
+/* Default variables values for grid layout 4 cols x 3 rows */
+:root {
+  --main-layout: auto auto auto auto;
+  --main-width: 24.9vw;
+  --main-height: 31vh;
+}
+
+.dashboard {
+  border: 0em none;
+  display: grid;
+  grid-gap: 0em;
+  grid-template-columns: var(--main-layout);
+  margin-bottom: 0em;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.tile-container {
+  position: relative;
+}
+
+.tile-error {
+  position: absolute;
+  text-align: center;
+  color: goldenrod;
+  top: 30%;
+  left: 10%;
+  right: 10%;
+}
+
+.tile-error-text {
+  font-size: large;
+  font-weight: bold;
+  margin-bottom: 1em;
+}
+
+.tile-error-detail {
+  font-family: monospace;
+  font-size: small;
+  padding: 1em;
+  text-align: left;
+  text-indent: -2em;
+  margin-left: 2em;
+}
+
+.tile-error-detail-container {
+  background-color: #222222;
+  padding: 0.1em;
+  border-radius: 1em;
+}
+
+.tile-menu-container, .focused-tile-menu-container {
+  display: grid;
+  height: auto;
+  position: absolute;
+  transition: 0.3s;
+  width: 1em;
+  z-index: 20;
+}
+
+.tile-menu, .focused-tile-menu {
+  display: grid;
+  height: auto;
+  position: relative;
+  top: 3em;
+  transition: 0.3s;
+}
+
+.tile-menu-icon, .focused-tile-menu-icon {
+  background-color: #00000022;
+  border-radius: 0.3em;
+  color: #777777;
+  font-size: 1em;
+  font-weight: bold;
+  position: absolute;
+  text-decoration: none;
+}
+
+.tile-menu-icon:hover, .focused-tile-menu-icon:hover {
+  background-color: #333333;
+  color: white;
+}
+
+.tile-menu-item a, .focused-tile-menu-item a {
+  background-color: #77777755;
+  border-radius: 0.7em;
+  color: white;
+  float: inline-start;
+  font-family: sans-serif;
+  font-optical-sizing: auto;
+  font-size: 1vw;
+  font-style: normal;
+  font-weight: bold;
+  margin: 0.1em;
+  padding-bottom: 0.5em;
+  padding-left: 0.7em;
+  padding-right: 0.7em;
+  padding-top: 0.5em;
+  text-align: center;
+  text-decoration: none;
+}
+
+.tile-image, .focused-tile-image {
+  align-items: center; /* Vertical centering */
+  border-radius: 0.2em; /* Rounded corners */
+  border: 0em none;
+  display: flex;
+  float: inline-start;
+  justify-content: center; /* Horizontal centering */
+  margin-right: 0em;
+  overflow: hidden;
+  position: relative;
+}
+
+.tile-image, .tile-iframe {
+  height: var(--main-height);
+  width: var(--main-width);
+}
+
+.focused-tile-image, .focused-tile-iframe {
+  height: 100%;
+  width: 100%;
+}
+
+.tile-iframe, .focused-tile-iframe {
+  border-radius: 0.2em; /* Rounded corners */
+  border: 0em none;
+  display: flex;
+  float: inline-start;
+  margin: 0;
+  overflow: hidden;
+  position: absolute; /* it must be absolute */
+}
+
+.tile-image img, .focused-tile-image img {
+  height: auto;
+  width: inherit;
+}
+
+.tile-title {
+  display: block; /* Just to be explicit since it's set in the js */
+  background-color: #00000099;
+  border-radius: 0.7em;
+  color: white;
+  font-optical-sizing: auto;
+  font-size: 1vw;
+  font-style: normal;
+  font-weight: 300;
+  left: 50%;
+  padding-top: 0.1vw;
+  padding-bottom: 0.1vw;
+  padding-left: 0.3vw;
+  padding-right: 0.3vw;
+  position: absolute;
+  top: 6%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+.focused-container {
+  display: block;
+  height: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  max-height: 100%;
+  max-width: 100%;
+  position: relative;
+  width: 100%;
+  z-index: -2;
+}
+
+.focused-tile-parent {
+  position: relative;
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.media {
+  cursor: pointer;
+  height: 100%;
+  width: 100%;
+}
+
+.hidden {
+  display: none;
+}
+
+#menu-container {
+  display: grid;
+  height: auto;
+  position: absolute;
+  position: fixed;
+  right: 9em;
+  top: 4.5em;
+  transition: 0.3s;
+  z-index: 20;
+}
+
+.user-menu, .menu {
+  grid-gap: 0.2em;
+  width: 3em;
+}
+
+.menu-item a {
+  background-color: #77777755;
+  border-radius: 0.7em;
+  color: white;
+  float: inline-start;
+  font-family: sans-serif;
+  font-optical-sizing: auto;
+  font-size: 1vw;
+  font-style: normal;
+  font-weight: bold;
+  margin-top: 0.5em;
+  padding-bottom: 0.4em;
+  padding-left: 1.3em;
+  padding-right: 1.3em;
+  padding-top: 0.4em;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  transition: 0.3s;
+  width: 5vw;
+}
+
+.menu-item a:hover, .tile-menu-item:hover {
+  background-color: #777777;
+}
+
+.overlay {
+  background-color: #000000cc;
+  box-sizing: border-box;
+  color: white;
+  display: none;
+  font-family: sans-serif;
+  height: 100%;
+  left: 0;
+  padding: 5em;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 3;
+}
+
+.overlay-content {
+  background-color: darkgrey;
+  border-radius: 2em;
+  max-height: 80vh; /* Ensures the overlay content is scrollable if it exceeds the viewport height */
+  overflow-y: auto;
+  padding: 1em;
+}
+
+.feed-ticker {
+  background-color: #000000aa;
+  bottom: 0;
+  box-sizing: border-box;
+  font-size: 2vh;
+  font-weight: bold;
+  overflow: hidden;
+  padding: 0em;
+  position: fixed;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.feeds-container {
+  animation-play-state: running;
+  animation: ticker var(--ticker-duration, 90s) linear infinite;
+  display: inline-block;
+  font-size: 0.9em;
+  padding-left: 100%;
+}
+
+.feed-item {
+  color: goldenrod;
+  font-weight: normal;
+  margin-right: 1.3em;
+  text-decoration: none;
+}
+
+.feed-title {
+  color: lightgrey;
+  font-weight: normal;
+  margin-right: 1.3em;
+  text-decoration: none;  
+}
+
+.feed-ticker-error {
+  color: white;
+}
+
+@keyframes ticker {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}

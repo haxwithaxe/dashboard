@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+	<title>Test Atom Feed</title>
+	<link href="http://localhost:8000/test.atom"/>
+	<updated>1970-01-01T00:00:00Z</updated>
+	<author>
+		<name>John Doe</name>
+	</author>
+	<id>0</id>
+	<entry>
+		<title>Test Atom #1 Title</title>
+		<link href="http://localhost:8000/test/1"/>
+		<id>1</id>
+		<updated>1970-01-01T00:00:00Z</updated>
+		<summary>Test #1 summary</summary>
+	</entry>
+	<entry>
+		<title>Test Atom #2 Title</title>
+		<link href="http://localhost:8000/test/2"/>
+		<id>2</id>
+		<updated>1970-01-01T00:00:00Z</updated>
+		<summary>Test #2 summary</summary>
+	</entry>
+	<entry>
+		<title>Test Atom #3 Title</title>
+		<link href="http://localhost:8000/test/3"/>
+		<id>3</id>
+		<updated>1970-01-01T00:00:00Z</updated>
+		<summary>Test #3 summary</summary>
+	</entry>
+</feed>
