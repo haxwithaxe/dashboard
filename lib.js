@@ -880,7 +880,7 @@ class Menu extends Collection {
   }
 }
 
-
+// Modal popup dialog.
 class PopUp extends Item {
 
   templateId = "popup";
@@ -898,6 +898,12 @@ class PopUp extends Item {
     document.getElementById(this.parentContainerId).style.display = "none";
   }
 
+  /* Show the popup.
+   *
+   * Arguments:
+   *   label (string): Popup dialog label/title text/html.
+   *   message (string): Popup dialog body text/html.
+   */
   show(label, message) {
     super.insert();
     this.containerElem.querySelector(".popup-label").innerHTML = label;
@@ -908,6 +914,7 @@ class PopUp extends Item {
     parentElem.style.zIndex = 20;
   }
 }
+
 
 /* A Tile source.
  *
@@ -921,14 +928,17 @@ class PopUp extends Item {
  *     Defaults to the Tile's refreshInterval or "5m".
  *   rotateInterval (interval, optional): The rotate interval for the source.
  *     Defaults to the Tile's rotateInterval or "5m".
+ *   video (boolean, optional): If true the source will always be treated as a
+ *     video.
  */
 class Source extends Item {
 
+  url;
   iframe = false;
   mimetype = null;
-  refreshInterval = "5m";
-  rotateInterval = "5m";
-  url;
+  refreshInterval = null;
+  rotateInterval = null;
+  video = false;
 
   postConstructor() {
     if (this.url === undefined) {
@@ -949,6 +959,15 @@ class Source extends Item {
     return;  // This has no elements to insert.
   }
 
+  // Do some stuff that needs doing to singleton sources.
+  soloMode() {
+    // Refresh solo source tiles instead of rotating
+    if (this.rotateInterval != null && this.refreshInterval == null) {
+      this.refreshInterval = this.rotateInterval;
+      this.rotateInterval = null;
+    }
+  }
+
   toSpec() {
     return {
       iframe: this.iframe,
@@ -956,6 +975,7 @@ class Source extends Item {
       refreshInterval: this.refreshInterval,
       rotateInterval: this.rotateInterval,
       url: this.url,
+      video: this.video,
     };
   }
 }
@@ -978,6 +998,8 @@ class Sources extends UrlCollection {
 
   // Select the next source and return it.
   next() {
+    // If the current index is 0 and the length of children is 1
+    //   the index will be set to 0.
     if (this.currentIndex >= this.children.length-1) {
       this.currentIndex = 0;
     } else {
@@ -995,22 +1017,29 @@ class Sources extends UrlCollection {
  *     values if set are "both", "width", "height". Defaults to "width".
  *   iframe (boolean, optional): If true the tile is displayed as an iFrame by
  *     default. Defaults to false.
+ *   mimetype (string, optional): The default mimetype for the tile. Defaults
+ *     to null.
  *   refreshInterval (interval, optional): The default refreshInterval for the 
- *     tile. Defaults to "5m".
+ *     tile. Defaults to null (no refreshing).
  *   rotateInterval (interval, optional): The default rotateInterval for the 
  *     tile. Defaults to "5m".
  *   scale (Number, optional): The default CSS transform scale for the tile.
  *     Defaults to 1.
- *   title: The title to display over a tile if set.
+ *   title (string, optional): The title to display over a tile if set.
+ *   video (boolean, optional): If true all sources will be treated as videos
+ *     by default.
+ *
  */
 class Tile extends Item {
 
   fit = null;
   iframe = false;
-  refreshInterval = "5m";
+  mimetype = null;
+  refreshInterval = null;
   rotateInterval = "5m";
   scale = 1;
   title = null;
+  video = false;
 
   parentContainerId = "tiles-container";
   templateId = "tile-item";
@@ -1050,6 +1079,9 @@ class Tile extends Item {
       console.error("Missing URLs in src option in config", this._spec);
     }
     this.sources = Sources.create(this.sources, this.sourceDefaults());
+    if (this.sources.length == 1) {
+      this.sources.current.soloMode();
+    }
     this.id = `tile-${generateId(this.sources.current.url)}`;
     this.videoId = `video-${this.id}`;
     this.imageId = `image-${this.id}`;
@@ -1240,6 +1272,9 @@ class Tile extends Item {
 
   // True if the URL of the current source is probably a video. 
   isVideo() {
+    if (this.sources.current.video) {
+      return true;
+    }
     return videoExtensions.some((ext) => this.sources.current.url.includes(ext));
   }
 
@@ -1251,11 +1286,11 @@ class Tile extends Item {
 
   // Refresh the displayed source.
   refresh() {
+    this.clearRefreshTimeout();  // Avoid race condition by clearing first.
     this.show();
     if (!this.isIframe && !this.isVideo) {
       wheelzoom(this.imageElem);
     }
-    this.clearRefreshTimeout();
     this.setRefreshTimeout();
   }
 
@@ -1359,25 +1394,30 @@ class Tile extends Item {
   }
 
   // Show a video in the URL in the tile.
-  showVideo(url) {
-    if (url === undefined) {
-      url = this.sources.current.url;
-    }
+  showVideo() {
     this.videoElem.classList.remove("hidden");
     this.videoSource.remove();  // Remove the source to get it to reload correctly
-    this.videoSource.src = url;
+    //this.videoSource.src = this.sources.current.url;
+    this.videoElem.src = this.sources.current.url;
     if (this.sources.current.mimetype == null) {
-      if (url.includes(".mp4")) {
+      if (this.sources.current.url.includes(".mp4")) {
         this.videoSource.type = "video/mp4";
-      } else if (url.includes(".webm")) {
+      } else if (this.sources.current.url.includes(".webm")) {
         this.videoSource.type = "video/webm";
-      } else if (url.includes(".ogg") || url.includes(".ogv")) {
+      } else if (
+        this.sources.current.url.includes(".ogg") 
+        || this.sources.current.url.includes(".ogv")
+      ) {
         this.videoSource.type = "video/ogg";
       } else {
-        console.error("Could not determine mimetype for url", url);
+        console.error(
+          "Could not determine mimetype for url",
+          this.sources.current.url
+        );
       }
     } else {
-      this.videoSource.type = this.sources.current.mimetype;
+      //this.videoSource.type = this.sources.current.mimetype;
+      this.videoElem.type = this.sources.current.mimetype;
     }
     this.errorElem.classList.add("hidden");
     this.iframeElem.classList.add("hidden");
@@ -1461,6 +1501,7 @@ class Tile extends Item {
       refreshInterval: this.refreshInterval,
       rotateInterval: this.rotateInterval,
       scale: this.scale,
+      video: this.video,
     };
   }
 }
