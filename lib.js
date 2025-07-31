@@ -629,15 +629,18 @@ class Feed extends Item {
   titleTextColor = null;
   url;
 
+  parentContainerId = "feeds-container";
+  templateId = "feed-container";
+
   postConstructor() {
-    this.parentContainerId = "feeds-container";
-    this.templateId = "feed-item";
+    this._writeLock = false;
     if (this.url === undefined) {
       console.error(
         "Missing 'url' option in the following feed configuration",
-        config
+        this._spec,
       );
     }
+    this.id = generateId(this.url);
     super.postConstructor();
     this.refreshTimeoutRef = setInterval(
       (() => this.fetch()),
@@ -646,8 +649,27 @@ class Feed extends Item {
     this.fetch();
   }
 
+  get locked() {
+    return this._writeLock;
+  }
+
+  lock() {
+    if (this.locked) {
+      return false;
+    }
+    this._writeLock = true;
+    return true;
+  }
+
+  unlock() {
+    this._writeLock = false;
+  }
+
   insert() {
-    return;  // This has no elements to insert.
+    super.insert();
+    if (this.bgColor != null) {
+      this.containerElem.style.backgroundColor = this.bgColor;
+    }
   }
 
   toSpec() {
@@ -662,10 +684,7 @@ class Feed extends Item {
 
   // Parse the downloaded feed and display it.
   parse(feedXml) {
-    const feedElems = []; 
-    if (this.bgColor != null) {
-      feedElem.backgroundColor = this.bgColor;
-    }
+    this.containerElem.childNodes.forEach((child) => child.remove());
     // Automatically detect whether the feed uses "item" or "entry" tags
     let itemTag = "item"; // Default to RSS
     if (feedXml.querySelector("entry")) {
@@ -678,15 +697,13 @@ class Feed extends Item {
       "channel > lastBuildDate, feed > updated"
     )?.textContent || "Unknown Time";
     const feedItems = feedXml.querySelectorAll(itemTag);
-    const feedText = [];
-    const feedTitle = createFromTemplate("feed-title");
+    const feedTitle = createFromTemplate("feed-title").querySelector("span");
     if (this.titleTextColor != null) {
       feedTitle.style.color = this.titleTextColor;
     }
-    feedTitle.children[0].textContent = 
-      `${feedTitleText} - Last Updated: ${lastUpdated} -`;
-    feedElems.push(feedTitle);
-    feedItems.forEach((item) => {
+    feedTitle.textContent = `${feedTitleText} - Last Updated: ${lastUpdated} -`;
+    this.containerElem.appendChild(feedTitle);
+    feedItems.forEach((item, index) => {
       // Handle both <link href="..."> and <link>...</link>
       const linkElement = item.querySelector("link");
       let link = "";
@@ -699,25 +716,21 @@ class Feed extends Item {
           link = linkElement.textContent;
         }
       }
-      const feedItem = createFromTemplate("feed-item");
+      const feedItem = createFromTemplate("feed-item").querySelector("span");
       const feedItemAnchor = feedItem.querySelector("a");
       feedItemAnchor.href = link;
       if (this.textColor != null) {
-        feedItemAnchor.color = this.textColor;
+        feedItemAnchor.style.color = this.textColor;
       }
       const itemTitle = item.querySelector("title").textContent;
       feedItemAnchor.textContent = itemTitle;
-      feedElems.push(feedItem);
+      this.containerElem.appendChild(feedItem);
     });
-    var delimElem = createFromTemplate("feed-delim");
+    var delimElem = createFromTemplate("feed-delim").querySelector("span");
     if (this.textColor != null) {
-      delimElem.color = this.textColor;
+      delimElem.style.color = this.textColor;
     }
-    feedElems.push(delimElem);
-    this.containerElem.childNodes.forEach(
-      (child) => this.containerElem.removeChild(child)
-    );
-    feedElems.forEach((item) => this.containerElem.appendChild(item));
+    this.containerElem.appendChild(delimElem);
     // Detect a failure to load all feeds
     //   Do this here because the fetching is asynchronous
     var globalEntries = 0;
@@ -730,14 +743,23 @@ class Feed extends Item {
 
   // Asynchronously download the feed.
   fetch() {
-    fetch(proxyUrl + "?url=" + encodeURIComponent(this.url))
+    if (!this.lock()) {
+      return;
+    }
+    var url = proxyUrl + "?url=" + encodeURIComponent(this.url);
+    if (this.url.includes("://localhost")) {
+      url = this.url;
+    }
+    fetch(url)
       .then((response) => response.text())
       .then((data) => {
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(data, "text/xml");
         this.parse(xmlDoc);
+        this.unlock();
       }).catch((error) => {
         console.error(`Error fetching feed from ${this.url}:`, error);
+        this.unlock();
       });
   }
 }
@@ -753,7 +775,7 @@ class Feeds extends UrlCollection {
     this.children.forEach((child) => child.fetch());
     this.containerElem.style.setProperty(
       "--ticker-duration",
-      `${this._defaults.scrollSpeed}s`
+      `${this._defaults.scrollSpeed}s`,
     );
   }
 }
