@@ -45,6 +45,16 @@ body, html {
   display: flex;
 }
 
+.popup-text {
+  display: block;
+}
+
+.popup-text p {
+  margin-top: 0.2em;
+  margin-bottom: 0em;
+  padding: 0em;
+}
+
 .popup-button-container {
   align-content: center;
   bottom: 0.5em;

@@ -1,6 +1,8 @@
-const helpText = `
-FIXME Write something helpful!
-`
+const helpText = `<div class="popup-text">
+  <p class="popup-text">Use the menus in the top left of each dashboard tile to manipulate the tiles.</p>
+  <p class="popup-text">Use the back button in the top left of the page to navigate backward in the dashboard.</p>
+  <p class="popup-text">Use the global menu button in the top right to access the global menu.</p>
+</div>`
 // Load from value in config.js
 window.dashboard = Config.create(userSettings);
 
