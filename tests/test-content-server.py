@@ -9,6 +9,7 @@ import os
 import pathlib
 import shutil
 import sys
+import time
 
 from PIL import Image, ImageFont, ImageDraw, ImageColor
 
@@ -122,11 +123,7 @@ def serve(
         host, port = httpd.socket.getsockname()[:2]
         url_host = f'[{host}]' if ':' in host else host
         print(f"Serving HTTP on {host} port {port} " f"(http://{url_host}:{port}/) ...")
-        try:
-            httpd.serve_forever()
-        except KeyboardInterrupt:
-            print("\nKeyboard interrupt received, exiting.")
-            sys.exit(0)
+        httpd.serve_forever()
 
 
 def main():
@@ -181,7 +178,6 @@ def main():
             )
     test_dir = pathlib.Path(args.directory)
     code_dir = test_dir.parent
-    print('code_dir', code_dir.absolute())
     shutil.copy(code_dir.joinpath('index.html'), test_dir.joinpath('index.html'))
     shutil.copy(code_dir.joinpath('dashboard.css'), test_dir.joinpath('dashboard.css'))
     shutil.copy(code_dir.joinpath('lib.js'), test_dir.joinpath('lib.js'))
@@ -205,4 +201,12 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    print('Press Ctrl+C to reset the environment and restart the server.')
+    while True:
+        try:
+            main()
+        except KeyboardInterrupt:
+            try:
+                time.sleep(1)
+            except KeyboardInterrupt:
+                sys.exit(0)
