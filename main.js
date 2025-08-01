@@ -34,27 +34,37 @@ updateButton.querySelector("a").href = projectReleasesUrl;
 updateButton.querySelector("a").target = "_blank";
 // Reload on window resize.
 window.addEventListener("resize", (() => window.location.reload()));
+const tickerHeight = dashboard.feeds.length > 0 ? 5 : 0;  // vh
+const topBarHeight = 6;  // vh
+const dashboardGrid = "auto ".repeat(dashboard.columns);
+const tileWidth = 99.6 / dashboard.columns + "vw";
+const dashboardHeight = 100 - topBarHeight - tickerHeight;  // vh
+const tileHeight = dashboardHeight / dashboard.rows + "vh";
+document.documentElement.style.setProperty(
+  "--tiles-layout",
+  dashboardGrid
+);
+document.documentElement.style.setProperty(
+  "--dashboard-height",
+  dashboardHeight
+);
+document.documentElement.style.setProperty(
+  "--tile-height",
+  tileHeight
+);
+document.documentElement.style.setProperty(
+  "--tile-width",
+  tileWidth
+);
+document.documentElement.style.setProperty(
+  "--top-bar-height",
+  topBarHeight
+);
 // Load Initial Data
 dashboard.start();
 // Show global menu on menu button click.
 document.getElementById("global-menu-icon").onclick = (
   () => dashboard.menu.show()
-);
-var layoutFeedOffset = dashboard.feeds.length > 0 ? 2 : 0;
-var layoutGrid = "auto ".repeat(dashboard.columns);
-var layoutWidth = 99.6 / dashboard.columns + "vw";
-var layoutHeight = (93 - layoutFeedOffset) / dashboard.rows + "vh";
-document.documentElement.style.setProperty(
-  "--main-layout",
-  layoutGrid
-);
-document.documentElement.style.setProperty(
-  "--main-width",
-  layoutWidth
-);
-document.documentElement.style.setProperty(
-  "--main-height",
-  layoutHeight
 );
 if (dashboard.feeds.length > 0) {
   // Unhide the RSS ticker div.
