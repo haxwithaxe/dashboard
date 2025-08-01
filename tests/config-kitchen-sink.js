@@ -34,14 +34,14 @@ const userSettings = {
   // Feed items
   feeds: [
     {
-      url: "http://localhost:8000/test.rss",
+      url: "http://localhost:8000/static/test.rss",
       refreshInterval: "12h",
       textColor: "magenta",
       bgColor: "darkgreen",
       titleTextColor: "yellow",
     },
     {
-      url: "http://localhost:8000/test.atom",
+      url: "http://localhost:8000/static/test.atom",
       refreshInterval: "1d",
       textColor: "lightblue",
       bgColor: "darkgreen",
@@ -108,17 +108,17 @@ const userSettings = {
     },
     { // 7
       title: "preserve aspect ratio",
-      sources: "http://localhost:8000/aspect-ratio.svg",
+      sources: "http://localhost:8000/static/aspect-ratio.svg",
       fit: "preserve",
     },
     { // 8
       title: "fit width",
-      sources: "http://localhost:8000/aspect-ratio.svg",
+      sources: "http://localhost:8000/static/aspect-ratio.svg",
       fit: "width",
     },
     { // 9
       title: "fit height",
-      sources: "http://localhost:8000/aspect-ratio.svg",
+      sources: "http://localhost:8000/static/aspect-ratio.svg",
       fit: "height",
     },
     { // 10

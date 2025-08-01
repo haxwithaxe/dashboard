@@ -51,7 +51,8 @@ class TestHandler(http.server.SimpleHTTPRequestHandler):
         self.copyfile(png, self.wfile)
 
     def do_GET(self):
-        path, *query = self.path.split('?', 1)
+        path, *query = self.path.strip('/').split('?', 1)
+        print('path', path)
         if 'refresh' in self.path or 'rotate' in self.path:
             now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             last = self._last_refresh_times.get(path, "never")
@@ -89,7 +90,7 @@ class TestHandler(http.server.SimpleHTTPRequestHandler):
         elif 'favicon' in self.path:
             self._send_ok('', content_type='image/png')
         elif 'sample-video' in self.path:
-            video = open(os.path.join(self.directory, 'sample-video.mp4'), 'rb')
+            video = open(os.path.join(self.directory, 'static/sample-video.mp4'), 'rb')
             try:
                 stat = os.fstat(video.fileno())
                 self._send_ok(video.read(), stat[6], content_type='video/mp4')
