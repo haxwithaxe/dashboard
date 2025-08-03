@@ -420,7 +420,7 @@ class Collection extends Item {
     this.children = [];
     super.postConstructor();
     if (this.childDefaults === undefined) {
-      this.childDefaults = this;
+      this.childDefaults = this._defaults;
     }
     this.specs.forEach((childSpec) => {
       this.children.push(this.childClass.create(childSpec, this.childDefaults));
@@ -969,9 +969,9 @@ class Source extends Item {
         this.args.config
       );
     }
-    if (
-      parseInterval(this.rotateInterval) <= parseInterval(this.refreshInterval)
-    ) {
+    const refreshIntervalMs = parseInterval(this.refreshInterval);
+    const rotateIntervalMs = parseInterval(this.rotateInterval);
+    if (rotateIntervalMs > 0 && rotateIntervalMs <= refreshIntervalMs) {
       this.refreshInterval = null;
     }
     super.postConstructor();
@@ -1058,7 +1058,7 @@ class Tile extends Item {
   iframe = false;
   mimetype = null;
   refreshInterval = null;
-  rotateInterval = "5m";
+  rotateInterval = null;
   scale = 1;
   title = null;
   video = false;
@@ -1509,7 +1509,12 @@ class Tile extends Item {
   }
 
   setRotateTimeout() {
-    const interval = parseInterval(this.sources.current.rotateInterval);
+    var interval = 0;
+    if (this.sources.current.rotateInterval == null && this.sources.current.refreshInterval == null) {
+      interval = parseInterval(this.rotateInterval != null ? this.rotateInterval : "5m");
+    } else {
+      interval = parseInterval(this.sources.current.rotateInterval);
+    }
     if (interval > 0) {
       this.rotateTimeoutRef = setInterval((() => this.rotate()), interval);
     }
