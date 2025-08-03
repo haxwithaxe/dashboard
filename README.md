@@ -1,6 +1,8 @@
 # Description
 ***Work In Progress***
 
+Almost done enough. Still need to get the image fit in tile config to work.
+
 This is a dashboard based loosely on [hamdashboard](https://github.com/VA3HDL/hamdashboard). The configuration interface is "simplified" and it has a few more small features.
 
 # Configuration
@@ -12,7 +14,7 @@ Currently the only way to configure this dashboard is editing ``config.js``. The
     * `bgColor` (string, optional) - Override the background color with an HTML color code.
     * `dateFormatLocal` (string, optional) - The locale to format the date and time parts with (eg `"en-US"`). Defaults to the browser's value.
     * `dateFormatTimeZone` (string, optional) - IANA time zone to format the date and time with (eg `"Etc/UTC"` or `"America/New_York"`). Defaults to the browser's value.
-    * `dateFormat` (string, optional) - C `strftime` style date and time format. See the (Date Formats)[#Date Formats] section for details. Defaults to `"%A, %B %m - %H:%M:%S %Z"`.
+    * `dateFormat` (string, optional) - C `strftime` style date and time format. See the [Date Formats](#date-formats) section for details. Defaults to `"%A, %B %m - %H:%M:%S %Z"`.
     * `textColor` (string, optional) - Override the text color with an HTML color code.
     * `text` (string, optional) - Override the local date and time with static text.
   * `center` - Center top bar configuration.
@@ -20,31 +22,31 @@ Currently the only way to configure this dashboard is editing ``config.js``. The
     * `bgColor` (string, optional) - Override the background color with an HTML color code.
     * `dateFormatLocal` (string, optional) - The locale to format the date and time parts with (eg `"en-US"`). Defaults to the browser's value.
     * `dateFormatTimeZone` (string, optional) - IANA time zone to format the date and time with (eg `"Etc/UTC"` or `"America/New_York"`). Defaults to the browser's value.
-    * `dateFormat` (string, optional) - C `strftime` style date and time format. See the (Date Formats)[#Date Formats] section for details. Defaults to `null` (uses the value of `text`).
+    * `dateFormat` (string, optional) - C `strftime` style date and time format. See the [Date Formats](#date-formats) section for details. Defaults to `null` (uses the value of `text`).
     * `textColor` (string, optional) - Override the text color with an HTML color code.
   * `right` - Right hand top bar configuration.
     * `bgColor` (string, optional) - Override the background color with an HTML color code.
     * `dateFormatLocal` (string, optional) - The locale to format the date and time parts with (eg `"en-US"`). Defaults to the browser's value.
-    * `dateFormatTimeZone` (string, optional) - IANA time zone to format the date and time with (eg `"Etc/UTC"` or `"America/New_York"`). Defaults to `"Etc/UTC"`..
-    * `dateFormat` (string, optional) - C `strftime` style date and time format. See the (Date Formats)[#Date Formats] section for details. Defaults to `"%Y-%m-%d - %H:%M:%S %Z`.
+    * `dateFormatTimeZone` (string, optional) - IANA time zone to format the date and time with (eg `"Etc/UTC"` or `"America/New_York"`). Defaults to `"Etc/UTC"`.
+    * `dateFormat` (string, optional) - C `strftime` style date and time format. See the [Date Formats](#date-formats) section for details. Defaults to `"%Y-%m-%d - %H:%M:%S %Z`.
     * `textColor` (string, optional) - Override the text color with an HTML color code.
     * `text` (string, optional) - Override the UTC date and time with static text.
 * `columns` (integer) - The number of columns in the tile grid.
 * `rows` (integer) - The number of rows in the tile grid.
 * `feedScrollSpeed` (number, optional) - The ticker scroll speed in pixels per second. Defaults to `180`.
-* `feeds` (Array, optional) - A list of feed specifications. See (Feeds)[#Feeds] for details.
+* `feeds` (Array, optional) - A list of feed specifications. See [Feeds](#feeds) for details.
 * `menu` (Array, optional) - A list of `Object`s with the following keys.
 * `tiles` - A list of `Object`s with the following keys.
   * `iframe` (boolean, optional) - If `true` the tile will default to being loaded as an iframe. Defaults to `false`.
   * `mimetype` (string, optional) - Override the detected mimetype of a video sources by default.
-  * `refreshInterval` (interval, optional) - The interval (see Interval section below) to wait between refreshing the current source of this tile. Defaults to `null` (no refreshing).
-  * `rotateInterval` (interval, optional) - The interval (see Interval section below) to wait between rotating the source being displayed in the tile. Defaults to `"5m"`.
+  * `refreshInterval` (interval, optional) - The interval (see [Interval](#interval) section below) to wait between refreshing the current source of this tile. Defaults to `null` (no refreshing).
+  * `rotateInterval` (interval, optional) - The interval (see [Interval](#interval) section below) to wait between rotating the source being displayed in the tile. Defaults to `"5m"`.
   * `scale` (number, optional) - The default CSS `transform` scale for the sources in a tile. Defaults to `1`.
   * `sources` - A list of sources to display one at a time in the tile. These can be URL strings or `Object`s with the following keys.
     * `url` - The URL to display when this source is active.
     * `iframe` (boolean, optional) - If `true` the tile will be loaded as an iframe while this source is displayed. Defaults to `iframe` of the tile.
-    * `refreshInterval` (interval, optional) - The interval (see Interval section below) to wait between refreshing this source. Defaults to ``5m``.
-    * `rotateInterval` (interval, optional) - The interval (see Interval section below) to wait between rotating the source being displayed in the tile. Defaults to `rotateInterval` of the tile.
+    * `refreshInterval` (interval, optional) - The interval (see [Interval](#interval) section below) to wait between refreshing this source. Defaults to `"5m"`.
+    * `rotateInterval` (interval, optional) - The interval (see [Interval](#interval) section below) to wait between rotating the source being displayed in the tile. Defaults to `rotateInterval` of the tile.
     * `title` (string, optional) - The title to display at the top of the tile. If left out or set to `null` or `""` the title will be hidden.
     * `mimetype` (string, optional) - Override the detected mimetype of a video source.
     * `video` (boolean, optional) - If `true` force the source to be treated like a video. Defaults to `false`.
@@ -56,7 +58,7 @@ Currently the only way to configure this dashboard is editing ``config.js``. The
 A list of `Object`s with the following keys.
 * `url` (string) - An RSS or Atom feed URL.
 * `bgColor` (string, optional) - Override the background color with an HTML color code.
-* `refreshInterval` (interval, optional) - An interval (see Interval section below).
+* `refreshInterval` (interval, optional) - An interval (see [Interval](#interval) section below).
 * `textColor` (string, optional) - Override the text color with an HTML color code.
 * `titleTextColor` (string, optional) - Override the title text color with an HTML color code.
 
@@ -71,15 +73,15 @@ A list of `Object`s with the following keys.
 ## Top Bar
 
 ### Date Formats
-* `"iso"`
+* `"iso"` - Format the time using ISO8601. Roughly equivalent to `"%Y-%m-%dT%H:%M:%S.000Z"` (not all the C `strftime` options are implemented here).
 * A subset of the C `strftime` style formatting is available.
   * `%Y` - 4 digit year.
   * `%y` - 2 digit year (``00``-``99``, eg ``25`` for the year ``2025``).
   * `%m` - 2 digit month (``01``-``12``).
   * `%e` - 1-2 digit month (``1``-``12``).
-  * `%b` - Abreviated month name.
+  * `%b` - Abbreviated month name.
   * `%B` - Month name.
-  * `%a` - Abreviated day of the week (eg ``Thu`` for Thursday).
+  * `%a` - Abbreviated day of the week (eg ``Thu`` for Thursday).
   * `%A` - Day of the week.
   * `%d` - 2 digit day of the month (``01``-``31``).
   * `%e` - 1-2 digit day of the month (``1``-``31``).
@@ -93,8 +95,8 @@ A list of `Object`s with the following keys.
   * `%T` - Equivalent to ``%H:%M:%S``.
   * `%R` - Equivalent to ``%I:%M``
   * `%r` - Equivalent to ``%I:%M:%S``.
-  * `%p` - AM or PM.
-  * `%P` - Lower case AM or PM.
+  * `%p` - ``AM`` or ``PM``.
+  * `%P` - Lower case AM or PM (``am`` or ``pm``).
   * `%Z` - Short timezone (eg ``UTC`` for ``Etc/UTC`` or ``EST`` for ``America/New_York``).
 
 #### Examples
@@ -106,8 +108,8 @@ A list of `Object`s with the following keys.
 A list of `Object`s with the following keys.
 * `iframe` (boolean, optional) - If `true` the tile will default to being loaded as an iframe. Defaults to `false`.
 * `mimetype` (string, optional) - Override the detected mimetype of a video sources by default.
-* `refreshInterval` (interval, optional) - The interval (see Interval section below) to wait between refreshing the current source of this tile. Defaults to `null` (no refreshing).
-* `rotateInterval` (interval, optional) - The interval (see Interval section below) to wait between rotating the source being displayed in the tile. Defaults to `"5m"`.
+* `refreshInterval` (interval, optional) - The interval (see [Interval](#interval) section below) to wait between refreshing the current source of this tile. Defaults to `null` (no refreshing).
+* `rotateInterval` (interval, optional) - The interval (see [Interval](#interval) section below) to wait between rotating the source being displayed in the tile. Defaults to `"5m"`.
 * `scale` (number, optional) - The default CSS `transform` scale for the sources in a tile. Defaults to `1`.
 * `sources` - A list of sources to display one at a time in the tile. These can be URL strings or `Object`s with the following keys.
 * `title` (string, optional) - The title to display at the top of the tile. If left out or set to `null` or `""` the title will be hidden by default. Defaults to `null`.
@@ -117,8 +119,8 @@ A list of `Object`s with the following keys.
 A list of sources to display one at a time in the tile. These can be URL strings or `Object`s with the following keys.
 * `url` - The URL to display when this source is active.
 * `iframe` (boolean, optional) - If `true` the tile will be loaded as an iframe while this source is displayed. Defaults to `iframe` of the tile.
-* `refreshInterval` (interval, optional) - The interval (see Interval section below) to wait between refreshing this source. Defaults to ``5m``.
-* `rotateInterval` (interval, optional) - The interval (see Interval section below) to wait between rotating the source being displayed in the tile. Defaults to `rotateInterval` of the tile.
+* `refreshInterval` (interval, optional) - The interval (see [Interval](#interval) section below) to wait between refreshing this source. Defaults to `"5m"`.
+* `rotateInterval` (interval, optional) - The interval (see [Interval](#interval) section below) to wait between rotating the source being displayed in the tile. Defaults to `rotateInterval` of the tile.
 * `title` (string, optional) - The title to display at the top of the tile. If left out or set to `null` or `""` the title will be hidden.
 * `mimetype` (string, optional) - Override the detected mimetype of a video source.
 * `video` (boolean, optional) - If `true` force the source to be treated like a video. Defaults to `false`.
@@ -181,9 +183,9 @@ This will load ``something.png`` on dashboard page load, refresh every minute fo
 
 ### A note on being kind to your data sources
 Rotating and refreshing load the URL of the source anew. Bandwidth and compute aren't free. To avoid abusing the servers that host the files and pages that load in each tile it's best to set the refresh and rotate intervals as long as you can stand them. For instance a feed that is updated once a day can safely be loaded every 1 day or 12 hours if the content isn't time critical.
-Halving the time the source is updated at for the rotate or refresh interval is generally enough to capture the effect of the content being loaded every 30 seconds as long as changes aren't super time critical (See (Nyquist-Shannon sampling)[https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem]).
+Halving the time the source is updated at for the rotate or refresh interval is generally enough to capture the effect of the content being loaded every 30 seconds or less as long as changes aren't super time critical (See [Nyquist-Shannon sampling](https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem)).
 A source that updates every 15 minutes and provides a forecast for the next 24 hours can safely be loaded every 7.5 or 15 minutes.
-A source that updates once a day but changes are rellevent in the first 10 minutes after the change would need to be loaded every 5 minutes to ensure changes are reflected within 10 minutes.
+A source that updates once a day but changes are relevant in the first 10 minutes after the change would need to be loaded every 5 minutes to ensure changes are reflected within 10 minutes.
 A source that updates at a long interval but has content that requires action immediately on change (eg DX cluster or POTA activation update) is reasonable to refresh very frequently. Some services will update their sites automatically though so if the source is in an iframe you may not need to reload at all.
 
 

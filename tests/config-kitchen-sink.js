@@ -1,8 +1,15 @@
 const userSettings = {
   topBar: {
+    left: {
+      text: "Override left text",
+    },
     center: {
       text: "AB1CDE - AA00aa",
     },
+    right: {
+      dateFormat: "Override date/time %Y-%m-%d %H:%M:%S %Z",
+      dateFormatTimeZone: "America/Chicago",
+    }
   },
 
   // Grid layout width and height
