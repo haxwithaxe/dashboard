@@ -121,23 +121,23 @@ const userSettings = {
     },
     { // 7 - Preserve the aspect ratio of the image
       title: "preserve aspect ratio",
-      sources: "http://localhost:8000/static/aspect-ratio.svg",
+      sources: "http://localhost:8000/static/aspect-ratio.png",
       fit: "preserve",
     },
     { // 8 - Fit the image to the width of the tile leaving the height automatic
       title: "fit width",
-      sources: "http://localhost:8000/static/aspect-ratio.svg",
+      sources: "http://localhost:8000/static/aspect-ratio.png",
       fit: "width",
     },
     { // 9 - Fit the image to the height of the tile leaving the width automatic
       title: "fit height",
-      sources: "http://localhost:8000/static/aspect-ratio.svg",
+      sources: "http://localhost:8000/static/aspect-ratio.png",
       fit: "height",
     },
     { // 10 - Strech the image to fit the tile
       title: "stretch fit",
-      sources: "http://localhost:8000/static/aspect-ratio.svg",
-      fit: "both",
+      sources: "http://localhost:8000/static/aspect-ratio.png",
+      fit: "stretch",
     },
 
     // Third row
