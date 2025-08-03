@@ -445,24 +445,26 @@ body, html {
 
 .feeds-container {
   animation-play-state: running;
-  animation: ticker var(--ticker-duration, 180s) linear infinite;
+  animation: ticker var(--ticker-duration, 90s) linear infinite;
   display: inline-block;
   height: 2em;
+  margin-left: 100%;
 }
 
 .feed-container {
+  border-radius: 0.5em;
   padding-left: 0.5em;
 }
 
 .feed-item {
   color: goldenrod;
-  margin-right: 1em;
+  margin-right: 0.5em;
   text-decoration: none;
 }
 
 .feed-title {
   color: lightgrey;
-  margin-right: 1em;
+  margin-right: 0.5em;
   text-decoration: none;  
 }
 

@@ -775,7 +775,7 @@ class Feeds extends UrlCollection {
     this.children.forEach((child) => child.fetch());
     this.containerElem.style.setProperty(
       "--ticker-duration",
-      `${this._defaults.scrollSpeed}s`,
+      `${this._defaults.scrollSpeed/2}s`,
     );
   }
 }
