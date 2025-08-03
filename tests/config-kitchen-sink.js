@@ -43,20 +43,21 @@ const userSettings = {
     {
       url: "http://localhost:8000/static/test.atom",
       refreshInterval: "1d",
-      textColor: "lightblue",
-      bgColor: "darkgreen",
-      titleTextColor: "lightred",
+      textColor: "blue",
+      bgColor: "darkred",
+      titleTextColor: "green",
     },
   ],
 
   // Dashboard tiles
   tiles: [
-    { // 1
+    // First row
+    { // 1 - Refresh once an hour
       title: "refresh 1 hour",
       sources: "http://localhost:8000/refresh-1hr.png",
       refreshInterval: "1h",
     },
-    { //2
+    { //2 - Rotate between images "source=1" and "source=2" every 30 seconds
       title: "rotate 30 seconds",
       sources: [
         "http://localhost:8000/rotate-30s.png?source=1",
@@ -64,7 +65,7 @@ const userSettings = {
       ],
       refreshInterval: "30s",
     },
-    { // 3
+    { // 3 - Rotate between iframes "source=1" and "source=2" every 30 seconds
       title: "rotate iframe 30s",
       sources: [
         "http://localhost:8000/rotate-iframe-30s?source=1",
@@ -73,7 +74,7 @@ const userSettings = {
       iframe: true,
       rotateInterval: "30s",
     },
-    { // 4
+    { // 4 - Rotate between videos "source=1" and "source=2" every 30 seconds
       title: "rotate video 30s",
       sources: [
         {
@@ -87,76 +88,90 @@ const userSettings = {
       ],
       rotateInterval: "30s",
     },
-    { // 5
+    { // 5 - Rotate between "source=1" and "source=2" every 1 minute and
+      //   refresh each every 30 seconds
       title: "ref/rot 30s/1m",
       sources: [
         "http://localhost:8000/refresh/rotate-1m/30s.png?source=1",
         "http://localhost:8000/refresh/rotate-1m/30s.png?source=2",
       ],
-      refreshInterval: "1m",
-      rotateInterval: "30s",
+      refreshInterval: "30s",
+      rotateInterval: "1m",
     },
-    { // 6
+
+    // Second row
+    { // 6 - Rotate between iframes "source=1" and "source=2" every 1 minute
+      //   and refresh each every 30 seconds
       title: "ref/rot iframe 30s/1m",
       sources: [
-        "http://localhost:8000/refresh/rotate-iframe-1m/30s?source=1",
-        "http://localhost:8000/refresh/rotate-iframe-1m/30s?source=2",
+        "http://localhost:8000/refresh/rotate-iframe-30s/1m?source=1",
+        "http://localhost:8000/refresh/rotate-iframe-30s/1m?source=2",
       ],
       iframe: true,
-      refreshInterval: "1m",
-      rotateInterval: "30s",
+      refreshInterval: "30s",
+      rotateInterval: "1m",
     },
-    { // 7
+    { // 7 - Preserve the aspect ratio of the image
       title: "preserve aspect ratio",
       sources: "http://localhost:8000/static/aspect-ratio.svg",
       fit: "preserve",
     },
-    { // 8
+    { // 8 - Fit the image to the width of the tile leaving the height automatic
       title: "fit width",
       sources: "http://localhost:8000/static/aspect-ratio.svg",
       fit: "width",
     },
-    { // 9
+    { // 9 - Fit the image to the height of the tile leaving the width automatic
       title: "fit height",
       sources: "http://localhost:8000/static/aspect-ratio.svg",
       fit: "height",
     },
-    { // 10
-      title: "Intended failure",
-      sources: "http://localhost:8000/404",
-      refreshInterval: 0,
+    { // 10 - Strech the image to fit the tile
+      title: "stretch fit",
+      sources: "http://localhost:8000/static/aspect-ratio.svg",
+      fit: "both",
     },
-    { // 11
+
+    // Third row
+    { // 11 - Show a video with just the URL to say it's a video
       title: "nominal video",
       sources: "http://localhost:8000/sample-video.mp4",
       refreshInterval: 0,
       rotateInterval: 0,
     },
-    { // 12
+    { // 12 - Force the mimetype of the video
       title: "force mimetype video",
       sources: "http://localhost:8000/sample-video.ogg",
       mimetype: "video/mp4",
       refreshInterval: 0,
       rotateInterval: 0,
     },
-    { // 13
+    { // 13 - Force the video type and let the browser figure out the mimetype
       title: "force video no type",
       sources: "http://localhost:8000/sample-video",
       video: true,
       refreshInterval: 0,
       rotateInterval: 0,
     },
-    { // 14
-      title: "no test",
-      sources: "http://localhost:8000/404",
-      refreshInterval: 0,
-      rotateInterval: 0,
+    { // 14 - Alternate between rotating every 30 seconds and every 1 minute
+      title: "rotate 30s then 1m",
+      sources: [
+        {
+          title: "rotate 30s then 1m",
+          url: "http://localhost:8000/rotate-30s/1m.png?source=30s",
+          rotateInterval: "30s",
+        },
+        {
+          title: "rotate 1m then 30s",
+          url: "http://localhost:8000/rotate-30s/1m.png?source=1m",
+          rotateInterval: "1m"
+        },
+      ],
     },
-    { // 15
-      title: "no test",
+    { // 15 - Verify the error message works
+      title: "Intended failure",
       sources: "http://localhost:8000/404",
       refreshInterval: 0,
-      rotateInterval: 0,
     },
   ],
 }
