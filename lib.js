@@ -1758,7 +1758,8 @@ class TopBarPart extends Item {
   // Show the TopBar part.
   show() {
     if (this.bgColor != null) {
-      this.containerElem.style.backgroudColor = this.bgColor;
+      this.containerElem.style.backgroundColor = this.bgColor;
+      console.debug("TopBarPart.show: set bgColor", this.bgColor, this.containerElem.style.backgroundColor);
     }
     if (this.textColor != null) {
       this.containerElem.style.color = this.textColor;

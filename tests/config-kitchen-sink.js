@@ -2,11 +2,15 @@ const userSettings = {
   topBar: {
     left: {
       text: "Override left text",
+      textColor: "red",
+      bgColor: "blue",
     },
     center: {
       text: "AB1CDE - AA00aa",
     },
     right: {
+      // Top right text should look like
+      //   "Override date/time 1970-01-01 00:00:00 CDT"
       dateFormat: "Override date/time %Y-%m-%d %H:%M:%S %Z",
       dateFormatTimeZone: "America/Chicago",
     }
@@ -50,9 +54,6 @@ const userSettings = {
     {
       url: "http://localhost:8000/static/test.atom",
       refreshInterval: "1d",
-      textColor: "blue",
-      bgColor: "darkred",
-      titleTextColor: "green",
     },
   ],
 
