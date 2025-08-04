@@ -961,6 +961,7 @@ class Source extends Item {
   refreshInterval = null;
   rotateInterval = null;
   video = false;
+  fit = null;
 
   postConstructor() {
     if (this.url === undefined) {
@@ -1036,7 +1037,8 @@ class Sources extends UrlCollection {
  * 
  * Attributes:
  *   fit (string, optional): Stretch each source to fit in the tile. Valid 
- *     values if set are "both", "width", "height". Defaults to "width".
+ *     values if set are "stretch", "width", "height", and "preserve". 
+ *     Defaults to "stretch".
  *   iframe (boolean, optional): If true the tile is displayed as an iFrame by
  *     default. Defaults to false.
  *   mimetype (string, optional): The default mimetype for the tile. Defaults
@@ -1054,7 +1056,7 @@ class Sources extends UrlCollection {
  */
 class Tile extends Item {
 
-  fit = null;
+  fit = "stretch";
   iframe = false;
   mimetype = null;
   refreshInterval = null;
@@ -1112,6 +1114,8 @@ class Tile extends Item {
     this.menuIconId = `menu-icon-${this.id}`;
     super.postConstructor();
     this.insertMenu();
+    //console.debug("Tile.postConstructor: imageElem", this.imageElem);
+    this.wheelzoom = wheelzoom(this.imageElem, {fit: this.fit});
   }
 
   get errorElem() {
@@ -1309,11 +1313,10 @@ class Tile extends Item {
   // Refresh the displayed source.
   refresh() {
     this.clearRefreshTimeout();  // Avoid race condition by clearing first.
+    this.wheelzoom.destroy();
     this.show();
-    if (!this.isIframe && !this.isVideo) {
-      wheelzoom(this.imageElem);
-    }
     this.setRefreshTimeout();
+    this.wheelzoom.load({fit: this.sources.current.fit});
   }
 
   // Switch the displayed source to the next one.
@@ -1419,26 +1422,8 @@ class Tile extends Item {
   showVideo() {
     this.videoElem.classList.remove("hidden");
     this.videoSource.remove();  // Remove the source to get it to reload correctly
-    //this.videoSource.src = this.sources.current.url;
     this.videoElem.src = this.sources.current.url;
-    if (this.sources.current.mimetype == null) {
-      if (this.sources.current.url.includes(".mp4")) {
-        this.videoSource.type = "video/mp4";
-      } else if (this.sources.current.url.includes(".webm")) {
-        this.videoSource.type = "video/webm";
-      } else if (
-        this.sources.current.url.includes(".ogg") 
-        || this.sources.current.url.includes(".ogv")
-      ) {
-        this.videoSource.type = "video/ogg";
-      } else {
-        console.error(
-          "Could not determine mimetype for url",
-          this.sources.current.url
-        );
-      }
-    } else {
-      //this.videoSource.type = this.sources.current.mimetype;
+    if (typeof this.sources.current.mimetype == "string") {
       this.videoElem.type = this.sources.current.mimetype;
     }
     this.errorElem.classList.add("hidden");

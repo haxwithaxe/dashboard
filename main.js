@@ -83,8 +83,6 @@ if (dashboard.feeds.length > 0) {
     tickerContainer.style.animationPlayState = "running";
   });
 }
-// Apply wheelzoom to all images including the focused container image.
-wheelzoom(document.querySelectorAll("img"));
 // Update the top bar every second for the seconds display in the times.
 setInterval((() => dashboard.topBar.show()), 1000);
 

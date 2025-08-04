@@ -28,6 +28,7 @@ window.wheelzoom = (function(){
 		function setSrcToBackground(img) {
 			img.style.backgroundRepeat = 'no-repeat';
 			img.style.backgroundImage = 'url("'+img.src+'")';
+			img.setAttribute("orig-src", img.src);
 			transparentSpaceFiller = 'data:image/svg+xml;base64,'+window.btoa('<svg xmlns="http://www.w3.org/2000/svg" width="'+img.naturalWidth+'" height="'+img.naturalHeight+'"></svg>');
 			img.src = transparentSpaceFiller;
 		}
@@ -129,11 +130,16 @@ window.wheelzoom = (function(){
 			document.addEventListener('mouseup', removeDrag);
 		}
 
-		function load() {
+		function load(options) {
+			if (options !== undefined && options.targetElement === undefined) {
+				Object.keys(defaults).forEach(function(key){
+					settings[key] = options[key] !== undefined ? options[key] : defaults[key];
+				});
+			}
+			if (img.src == transparentSpaceFiller) {
+				return;
+			}
 			var initial = Math.max(settings.initialZoom, 1);
-
-			if (img.src === transparentSpaceFiller) return;
-
 			var computedStyle = window.getComputedStyle(img, null);
 
 			width = parseInt(computedStyle.width, 10);
@@ -147,13 +153,14 @@ window.wheelzoom = (function(){
 
 			img.style.backgroundSize = bgWidth+'px '+bgHeight+'px';
 			img.style.backgroundPosition = bgPosX+'px '+bgPosY+'px';
+
 			img.addEventListener('wheelzoom.reset', reset);
 
 			img.addEventListener('wheel', onwheel);
 			img.addEventListener('mousedown', draggable);
 		}
 
-		var destroy = function (originalProperties) {
+		var destroy = function () {
 			img.removeEventListener('wheelzoom.destroy', destroy);
 			img.removeEventListener('wheelzoom.reset', reset);
 			img.removeEventListener('load', load);
@@ -161,15 +168,9 @@ window.wheelzoom = (function(){
 			img.removeEventListener('mousemove', drag);
 			img.removeEventListener('mousedown', draggable);
 			img.removeEventListener('wheel', onwheel);
-
-			img.style.backgroundImage = originalProperties.backgroundImage;
-			img.style.backgroundRepeat = originalProperties.backgroundRepeat;
-			img.src = originalProperties.src;
-		}.bind(null, {
-			backgroundImage: img.style.backgroundImage,
-			backgroundRepeat: img.style.backgroundRepeat,
-			src: img.src
-		});
+			img.style.backgroundImage = "";
+			img.src = img.getAttribute("orig-src");
+		}
 
 		img.addEventListener('wheelzoom.destroy', destroy);
 
@@ -184,23 +185,15 @@ window.wheelzoom = (function(){
 		}
 
 		img.addEventListener('load', load);
+		return {destroy: destroy, load: load};
 	};
 
 	// Do nothing in IE9 or below
 	if (typeof window.btoa !== 'function') {
-		return function(elements) {
-			return elements;
+		return () => {
+			return {destroy: (() => {}), load: (() => {})};
 		};
 	} else {
-		return function(elements, options) {
-			if (elements && elements.length) {
-				Array.prototype.forEach.call(elements, function (node) {
-					main(node, options);
-				});
-			} else if (elements && elements.nodeName) {
-				main(elements, options);
-			}
-			return elements;
-		};
+		return main;
 	}
 }());
