@@ -65,6 +65,7 @@ const userSettings = {
       sources: "http://localhost:8000/refresh-1hr.png",
       refreshInterval: "1h",
       fit: "preserve",
+      position: "left",
     },
     { //2 - Rotate between images "source=1" and "source=2" every 30 seconds
       title: "rotate 30 seconds - width",
@@ -108,6 +109,7 @@ const userSettings = {
       refreshInterval: "30s",
       rotateInterval: "1m",
       fit: "height",
+      position: "right bottom",
     },
 
     // Second row
@@ -126,6 +128,7 @@ const userSettings = {
       title: "preserve aspect ratio",
       sources: "http://localhost:8000/static/aspect-ratio.png",
       fit: "preserve",
+      postion: "bottom",
     },
     { // 8 - Fit the image to the width of the tile leaving the height automatic
       title: "fit width",
