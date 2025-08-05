@@ -61,17 +61,19 @@ const userSettings = {
   tiles: [
     // First row
     { // 1 - Refresh once an hour
-      title: "refresh 1 hour",
+      title: "refresh 1 hour - preserve",
       sources: "http://localhost:8000/refresh-1hr.png",
       refreshInterval: "1h",
+      fit: "preserve",
     },
     { //2 - Rotate between images "source=1" and "source=2" every 30 seconds
-      title: "rotate 30 seconds",
+      title: "rotate 30 seconds - width",
       sources: [
         "http://localhost:8000/rotate-30s.png?source=1",
         "http://localhost:8000/rotate-30s.png?source=2",
       ],
       refreshInterval: "30s",
+      fit: "width",
     },
     { // 3 - Rotate between iframes "source=1" and "source=2" every 30 seconds
       title: "rotate iframe 30s",
@@ -98,13 +100,14 @@ const userSettings = {
     },
     { // 5 - Rotate between "source=1" and "source=2" every 1 minute and
       //   refresh each every 30 seconds
-      title: "ref/rot 30s/1m",
+      title: "ref/rot 30s/1m - height",
       sources: [
         "http://localhost:8000/refresh/rotate-1m/30s.png?source=1",
         "http://localhost:8000/refresh/rotate-1m/30s.png?source=2",
       ],
       refreshInterval: "30s",
       rotateInterval: "1m",
+      fit: "height",
     },
 
     // Second row
