@@ -1115,7 +1115,6 @@ class Tile extends Item {
     super.postConstructor();
     this.insertMenu();
     //console.debug("Tile.postConstructor: imageElem", this.imageElem);
-    this.wheelzoom = wheelzoom(this.imageElem, {fit: this.fit});
   }
 
   get errorElem() {
@@ -1313,10 +1312,8 @@ class Tile extends Item {
   // Refresh the displayed source.
   refresh() {
     this.clearRefreshTimeout();  // Avoid race condition by clearing first.
-    this.wheelzoom.destroy();
     this.show();
     this.setRefreshTimeout();
-    this.wheelzoom.load({fit: this.sources.current.fit});
   }
 
   // Switch the displayed source to the next one.
@@ -1339,6 +1336,12 @@ class Tile extends Item {
     } else {
       // Is image
       this.showImage();
+      if (this.wheelzoom === undefined) {
+        this.wheelzoom = wheelzoom(this.imageElem, {fit: this.fit});
+      } else {
+        this.wheelzoom.destroy();
+        this.wheelzoom.load({fit: this.sources.current.fit});
+      }
     }
   }
 

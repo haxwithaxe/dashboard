@@ -140,86 +140,67 @@ window.wheelzoom = (function(){
 			if (img.src == transparentSpaceFiller) {
 				return;
 			}
-			//if (img.naturalWidth == 0 || img.naturalHeight == 0) {
-			//	setTimeout(load, 100);
-			//}
-			var initial = Math.max(settings.initialZoom, 1);
-			var computedStyle = window.getComputedStyle(img, null);
-
+			const initial = Math.max(settings.initialZoom, 1);
+			const computedStyle = window.getComputedStyle(img, null);
 			const computedWidth = parseInt(computedStyle.width, 10);
 			const computedHeight = parseInt(computedStyle.height, 10);
 			const naturalWidth = parseInt(img.naturalWidth, 10);
 			const naturalHeight = parseInt(img.naturalHeight, 10);
-			var widthRatio = naturalWidth / computedWidth;
-			//if (widthRatio > 1) {
-			//	widthRatio = widthRatio - 1;
-			//}
-			var heightRatio = img.naturalHeight / computedHeight;
-			//if (heightRatio > 1) {
-			//	heightRatio = heightRatio - 1;
-			//}
+			const widthRatio = naturalWidth / computedWidth;
+			const heightRatio = img.naturalHeight / computedHeight;
 			const naturalAspectRatio = naturalWidth / naturalHeight;
 			const computedAspectRatio = computedWidth / computedHeight;
-
-			console.debug("computed/natural specs", settings.fit, {
-				computedWidth: computedWidth,
-				computedHeight: computedHeight,
-				naturalWidth: naturalWidth,
-				naturalHeight: naturalHeight,
-				widthRatio: widthRatio,
-				heightRatio: heightRatio,
-				naturalAspectRatio: naturalAspectRatio,
-				computedAspectRatio: computedAspectRatio,
-			}, img);
-
+			// Default behavior is to stretch to fit
 			width = computedWidth;
 			height = computedHeight;
-			if (settings.fit == "width") {
-				console.debug("width", widthRatio);
-				//height = computedHeight / widthRatio;
-				height = naturalHeight / widthRatio;
-			} else if (settings.fit == "height") {
-				console.debug("height", heightRatio);
-				width = naturalWidth / heightRatio;
-			} else if (settings.fit == "preserve") {
-				console.debug("preserve");
-				// Preserve aspect ratio and fit in tile
-				if (naturalAspectRatio > 1) {
-					console.debug("image: preserve image landscape");
-					// Wider than tall - shrink height to match width
+			if (computedAspectRatio >= 1) {
+				// Tile is wider than it is tall, or maybe perfectly square
+				if (settings.fit == "width") {
+					height = naturalHeight / widthRatio;
+				} else if (settings.fit == "height") {
 					width = naturalWidth / heightRatio;
-				} else if (naturalAspectRatio < 1) {
-					console.debug("image: preserve image portrait");
-					// Taller than wide - shrink width to match height
-					height = naturalWidth / widthRatio;
-				} else {
-					console.debug("image is square");
-					// Perfectly square image
-					if (computedAspectRatio > 1) {
-						width = computedWidth * widthRatio;
-					} else if (computedAspectRatio < 1){
-						height = computedHeight * heightRatio;
+				} else if (settings.fit == "preserve") {
+					// Preserve aspect ratio and fit in tile
+					if (naturalAspectRatio > 1) {
+						// Wider than tall - shrink height to fit width
+						height = naturalHeight / widthRatio;
+					} else if (naturalAspectRatio < 1) {
+						// Taller than wide - shrink width to fit width
+						width = naturalWidth / heightRatio;
 					} else {
-						height = computedHeight * heightRatio;
-						width = computedWidth * widthRatio;
+						// Perfectly square image - shrink width to fit width
+						width = naturalWidth / heightRatio;
 					}
 				}
-			} else { // Default behavior is to stretch to fit
-				console.debug("stretch");
-			}
-
+			} else if (computedAspectRatio < 1) {
+				// Tile is taller than it is wide
+				if (settings.fit == "width") {
+					height = naturalHeight / widthRatio;
+				} else if (settings.fit == "height") {
+					width = naturalWidth / heightRatio;
+				} else if (settings.fit == "preserve") {
+					// Preserve aspect ratio and fit in tile
+					if (naturalAspectRatio > 1) {
+						// Wider than tall - shrink width to fit height
+						width = naturalWidth / heightRatio;
+					} else if (naturalAspectRatio < 1) {
+						// Taller than wide - shrink height to fit height
+						height = naturalHeight / widthRatio;
+					} else {
+						console.debug("image is square");
+						// Perfectly square image - shrink height to fit height
+						height = naturalHeight / widthRatio;
+					}
+				}
+			}  // Default behavior is to stretch to fit
 			bgWidth = width * initial;
 			bgHeight = height * initial;
 			bgPosX = -(bgWidth - width) * settings.initialX;
 			bgPosY = -(bgHeight - height) * settings.initialY;
-
 			setSrcToBackground(img);
-
 			img.style.backgroundSize = bgWidth+'px '+bgHeight+'px';
 			img.style.backgroundPosition = bgPosX+'px '+bgPosY+'px';
-
 			img.addEventListener('wheelzoom.reset', reset);
-
 			img.addEventListener('wheel', onwheel);
 			img.addEventListener('mousedown', draggable);
 		}
@@ -237,17 +218,13 @@ window.wheelzoom = (function(){
 		}
 
 		img.addEventListener('wheelzoom.destroy', destroy);
-
 		options = options || {};
-
 		Object.keys(defaults).forEach(function(key){
 			settings[key] = options[key] !== undefined ? options[key] : defaults[key];
 		});
-
 		if (img.complete) {
 			load();
 		}
-
 		img.addEventListener('load', (() => setTimeout(load, 100)));
 		return {destroy: destroy, load: load};
 	};
