@@ -14,6 +14,15 @@ import time
 from PIL import Image, ImageFont, ImageDraw, ImageColor
 
 
+def cleanup(test_dir):
+    test_dir.joinpath('index.html').unlink()
+    test_dir.joinpath('dashboard.css').unlink()
+    test_dir.joinpath('lib.js').unlink()
+    test_dir.joinpath('main.js').unlink()
+    test_dir.joinpath('wheelzoom.js').unlink()
+    test_dir.joinpath('config.js').unlink()
+
+
 class TestHandler(http.server.SimpleHTTPRequestHandler):
 
     _last_refresh_times = {}
@@ -33,7 +42,7 @@ class TestHandler(http.server.SimpleHTTPRequestHandler):
            os.path.join(self.directory, 'FreeMono.ttf'),
            size=20,
         )
-        img = Image.new("RGB", (300, 300), (255, 255, 255))
+        img = Image.new("RGB", (300, 400), (255, 255, 255))
         draw = ImageDraw.Draw(img)
         draw.multiline_text(
             (10, 70),
@@ -178,13 +187,13 @@ def main():
             )
     test_dir = pathlib.Path(args.directory)
     code_dir = test_dir.parent
-    shutil.copy(code_dir.joinpath('index.html'), test_dir.joinpath('index.html'))
-    shutil.copy(code_dir.joinpath('dashboard.css'), test_dir.joinpath('dashboard.css'))
-    shutil.copy(code_dir.joinpath('lib.js'), test_dir.joinpath('lib.js'))
-    shutil.copy(code_dir.joinpath('main.js'), test_dir.joinpath('main.js'))
-    shutil.copy(code_dir.joinpath('wheelzoom.js'), test_dir.joinpath('wheelzoom.js'))
-    shutil.copy(pathlib.Path(args.config).absolute(), test_dir.joinpath('config.js'))
-    with contextlib.suppress(Exception):
+    test_dir.joinpath('index.html').symlink_to(code_dir.joinpath('index.html'))
+    test_dir.joinpath('dashboard.css').symlink_to(code_dir.joinpath('dashboard.css'))
+    test_dir.joinpath('lib.js').symlink_to(code_dir.joinpath('lib.js'))
+    test_dir.joinpath('main.js').symlink_to(code_dir.joinpath('main.js'))
+    test_dir.joinpath('wheelzoom.js').symlink_to(code_dir.joinpath('wheelzoom.js'))
+    test_dir.joinpath('config.js').symlink_to(pathlib.Path(args.config).absolute())
+    with contextlib.suppress(KeyboardInterrupt):
         serve(
             HandlerClass=TestHandler,
             ServerClass=DualStackServer,
@@ -192,21 +201,8 @@ def main():
             bind=args.bind,
             protocol=args.protocol,
         )
-    test_dir.joinpath('index.html').unlink()
-    test_dir.joinpath('dashboard.css').unlink()
-    test_dir.joinpath('lib.js').unlink()
-    test_dir.joinpath('main.js').unlink()
-    test_dir.joinpath('wheelzoom.js').unlink()
-    test_dir.joinpath('config.js').unlink()
-
+    print("Cleaning up")
+    cleanup(test_dir)
 
 if __name__ == '__main__':
-    print('Press Ctrl+C to reset the environment and restart the server.')
-    while True:
-        try:
-            main()
-        except KeyboardInterrupt:
-            try:
-                time.sleep(1)
-            except KeyboardInterrupt:
-                sys.exit(0)
+    main()
