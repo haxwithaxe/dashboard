@@ -39,7 +39,7 @@ Currently the only way to configure this dashboard is editing ``config.js``. The
 * `rows` (integer) - The number of rows in the tile grid.
 * `feedScrollSpeed` (number, optional) - The ticker scroll speed in pixels per second. Defaults to `180`.
 * `feeds` (Array, optional) - A list of feed specifications. See [Feeds](#feeds) for details.
-* `menu` (Array, optional) - A list of `Object`s with the following keys.
+* `menu` (Array, optional) - A list of `Object`s with user menu options. See [Menu](#menu) for details.
 * `tiles` - A list of `Object`s describing dashboard [tiles](#tiles).
 
 ## Feeds
