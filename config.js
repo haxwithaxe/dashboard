@@ -107,6 +107,7 @@ const userSettings = {
         "https://services.swpc.noaa.gov/images/animations/suvi/primary/195/latest.png",
         "https://services.swpc.noaa.gov/images/animations/suvi/primary/284/latest.png",
       ],
+      fit: "preserve",
     },
     {
       title: "",
@@ -120,6 +121,7 @@ const userSettings = {
         "https://www.tvcomm.co.uk/g7izu/Autosave/ATL_HF10_AutoSave.JPG",
         "https://www.tvcomm.co.uk/g7izu/Autosave/PACIFIC_HF_AutoSave.JPG",
       ],
+      fit: "preserve"
       rotateInterval: "2m",
     },
     {

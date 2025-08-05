@@ -1,14 +1,12 @@
 # Description
 ***Work In Progress***
 
-Almost done enough. Still need to get the image fit in tile config to work.
-
 This is a dashboard based loosely on [hamdashboard](https://github.com/VA3HDL/hamdashboard). The configuration interface is "simplified" and it has a few more small features.
 
 # Usage
 There are a couple good options.
 
-1. Dump the files into a web server's static files root, or just open ``index.html`` directly in your browser.
+1. Dump the files into a web server's static files root, or just open ``index.html`` directly in your browser. Opening the file directly from your local drive or via ``localhost`` may cause issues with cross-origin restrictions.
 
 2. Use the docker image and mount your ``config.js`` in the container. Where the files are pre-dumped into a web server's static files root so you don't have to.
 
@@ -38,9 +36,9 @@ Currently the only way to configure this dashboard is editing ``config.js``. The
 * `columns` (integer) - The number of columns in the tile grid.
 * `rows` (integer) - The number of rows in the tile grid.
 * `feedScrollSpeed` (number, optional) - The ticker scroll speed in pixels per second. Defaults to `180`.
-* `feeds` (Array, optional) - A list of feed specifications. See [Feeds](#feeds) for details.
-* `menu` (Array, optional) - A list of `Object`s with user menu options. See [Menu](#menu) for details.
-* `tiles` - A list of `Object`s describing dashboard [tiles](#tiles).
+* `feeds` (Array, optional) - A list of feed configurations. See [Feeds](#feeds) for details.
+* `menu` (Array, optional) - A list of user menu configurations. See [Menu](#menu) for details.
+* `tiles` (Array) - A list of dashboard tile configurations. See [Tiles](#tiles) for details.
 
 ## Feeds
 A list of `Object`s with the following keys.
