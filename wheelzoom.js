@@ -11,6 +11,7 @@ window.wheelzoom = (function(){
 		initialX: 0.5,
 		initialY: 0.5,
 		fit: "stretch",
+		position: "center",
 	};
 
 	var main = function(img, options){
@@ -46,9 +47,12 @@ window.wheelzoom = (function(){
 			} else if (bgPosY < height - bgHeight) {
 				bgPosY = height - bgHeight;
 			}
-
-			img.style.backgroundSize = bgWidth+'px '+bgHeight+'px';
-			img.style.backgroundPosition = bgPosX+'px '+bgPosY+'px';
+			img.style.backgroundSize = `${bgWidth}px ${bgHeight}px`;
+			if (bgPosX == 0 && bgPosY == 0 && settings.position) {
+				img.style.backgroundPosition = settings.position;
+			} else {
+				img.style.backgroundPosition = `${bgPosX}px ${bgPosY}px`;
+			}
 		}
 
 		function reset() {
@@ -187,7 +191,6 @@ window.wheelzoom = (function(){
 						// Taller than wide - shrink height to fit height
 						height = naturalHeight / widthRatio;
 					} else {
-						console.debug("image is square");
 						// Perfectly square image - shrink height to fit height
 						height = naturalHeight / widthRatio;
 					}
@@ -198,8 +201,12 @@ window.wheelzoom = (function(){
 			bgPosX = -(bgWidth - width) * settings.initialX;
 			bgPosY = -(bgHeight - height) * settings.initialY;
 			setSrcToBackground(img);
-			img.style.backgroundSize = bgWidth+'px '+bgHeight+'px';
-			img.style.backgroundPosition = bgPosX+'px '+bgPosY+'px';
+			img.style.backgroundSize = `${bgWidth}px ${bgHeight}px`;
+			if (bgPosX == 0 && bgPosY == 0 && settings.position != false) {
+				img.style.backgroundPosition = settings.position;
+			} else {
+				img.style.backgroundPosition = `${bgPosX}px ${bgPosY}px`;
+			}
 			img.addEventListener('wheelzoom.reset', reset);
 			img.addEventListener('wheel', onwheel);
 			img.addEventListener('mousedown', draggable);

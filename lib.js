@@ -946,22 +946,27 @@ class PopUp extends Item {
  *     Defaults to false.
  *   mimetype (string, optional): Override the detected mimetype of the source 
  *     if it is a video.
+ *   position (string|boolean, optional): The default position of the source's 
+ *     image if it doesn't fill the tile. Valid values are valid values for the
+ *     CSS property "background-position" or false to disable the additional 
+ *     positioning. Defaults to the Tile's position.
  *   refreshInterval (interval, optional): The refresh interval for the source.
- *     Defaults to the Tile's refreshInterval or "5m".
+ *     Defaults to the Tile's refreshInterval.
  *   rotateInterval (interval, optional): The rotate interval for the source.
- *     Defaults to the Tile's rotateInterval or "5m".
+ *     Defaults to the Tile's rotateInterval.
  *   video (boolean, optional): If true the source will always be treated as a
  *     video.
  */
 class Source extends Item {
 
   url;
+  fit = null;
   iframe = false;
   mimetype = null;
+  position = null;
   refreshInterval = null;
   rotateInterval = null;
   video = false;
-  fit = null;
 
   postConstructor() {
     if (this.url === undefined) {
@@ -993,6 +998,8 @@ class Source extends Item {
 
   toSpec() {
     return {
+      position: this.position,
+      fit: this.fit,
       iframe: this.iframe,
       mimetype: this.mimetype,
       refreshInterval: this.refreshInterval,
@@ -1043,6 +1050,10 @@ class Sources extends UrlCollection {
  *     default. Defaults to false.
  *   mimetype (string, optional): The default mimetype for the tile. Defaults
  *     to null.
+ *   position (string|boolean, optional): The default position of the tile's 
+ *     image if it doesn't fill the tile. Valid values are valid values for the
+ *     CSS property "background-position" or false to disable the additional 
+ *     positioning. Defaults to "center".
  *   refreshInterval (interval, optional): The default refreshInterval for the 
  *     tile. Defaults to null (no refreshing).
  *   rotateInterval (interval, optional): The default rotateInterval for the 
@@ -1059,6 +1070,7 @@ class Tile extends Item {
   fit = "stretch";
   iframe = false;
   mimetype = null;
+  position = "center";
   refreshInterval = null;
   rotateInterval = null;
   scale = 1;
@@ -1114,7 +1126,6 @@ class Tile extends Item {
     this.menuIconId = `menu-icon-${this.id}`;
     super.postConstructor();
     this.insertMenu();
-    //console.debug("Tile.postConstructor: imageElem", this.imageElem);
   }
 
   get errorElem() {
@@ -1337,10 +1348,10 @@ class Tile extends Item {
       // Is image
       this.showImage();
       if (this.wheelzoom === undefined) {
-        this.wheelzoom = wheelzoom(this.imageElem, {fit: this.fit});
+        this.wheelzoom = wheelzoom(this.imageElem, {fit: this.sources.current.fit, position: this.sources.current.position});
       } else {
         this.wheelzoom.destroy();
-        this.wheelzoom.load({fit: this.sources.current.fit});
+        this.wheelzoom.load({fit: this.sources.current.fit, position: this.sources.current.position});
       }
     }
   }
@@ -1513,6 +1524,7 @@ class Tile extends Item {
       fit: this.fit,
       iframe: this.iframe,
       mimetype: this.mimetype,
+      position: this.position,
       refreshInterval: this.refreshInterval,
       rotateInterval: this.rotateInterval,
       scale: this.scale,
