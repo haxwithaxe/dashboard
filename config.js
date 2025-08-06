@@ -121,7 +121,7 @@ const userSettings = {
         "https://www.tvcomm.co.uk/g7izu/Autosave/ATL_HF10_AutoSave.JPG",
         "https://www.tvcomm.co.uk/g7izu/Autosave/PACIFIC_HF_AutoSave.JPG",
       ],
-      fit: "preserve"
+      fit: "preserve",
       rotateInterval: "2m",
     },
     {
