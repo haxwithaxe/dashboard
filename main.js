@@ -11,13 +11,29 @@ document.getElementById("refresh-button").querySelector("a").onclick = (() => {
   window.location.reload();
   dashboard.tiles.start();
 });
+document.getElementById("sources-button").querySelector("a").onclick = ((event) => {
+  event.preventDefault();
+  const pre = document.createElement("pre");
+  pre.classList.add("code");
+  fetch("config.js").then((got) =>
+    got.text().then((text) =>
+      pre.innerText = text
+    )
+  ).catch((error) =>
+    pre.innerText = "Failed to load 'config.js'."
+  );
+  dashboard.popup("Configuration", pre);
+  dashboard.menu.hide();
+});
 // Back out of all alternate views on back button click.
 document.getElementById("back-button").querySelector("a").onclick = ((event) => {
+  event.preventDefault();
   dashboard.menu.defocus();
   dashboard.menu.hide();
   dashboard.tiles.defocus();
 });
 document.getElementById("top-bar-back-button").onclick = ((event) => {
+  event.preventDefault();
   dashboard.menu.defocus();
   dashboard.menu.hide();
   dashboard.tiles.defocus();
@@ -26,7 +42,8 @@ document.getElementById("top-bar-back-button").onclick = ((event) => {
 document
   .getElementById("help-button")
   .querySelector("a")
-  .onclick = (() => {
+  .onclick = ((event) => {
+    event.preventDefault();
     dashboard.popup("Help", helpText);
     dashboard.menu.hide();
   });
@@ -66,7 +83,11 @@ document.documentElement.style.setProperty(
 dashboard.start();
 // Show global menu on menu button click.
 document.getElementById("global-menu-icon").onclick = (
-  () => dashboard.menu.show()
+  (event) => {
+    event.preventDefault();
+    dashboard.menu.show();
+    console.debug("global menu onclick");
+  }
 );
 if (dashboard.feeds.length > 0) {
   // Unhide the RSS ticker div.

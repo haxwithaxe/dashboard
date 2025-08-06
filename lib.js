@@ -1166,7 +1166,11 @@ class PopUp extends Item {
   show(label, message) {
     super.insert();
     this.containerElem.querySelector(".popup-label").innerHTML = label;
-    this.containerElem.querySelector(".popup-body").innerHTML = message;
+    if (typeof message == "string") {
+      this.containerElem.querySelector(".popup-body").innerHTML = message;
+    } else {
+      this.containerElem.querySelector(".popup-body").appendChild(message);
+    }
     this.containerElem.querySelector(".button").onclick = (() => this.hide());
     const parentElem = document.getElementById(this.parentContainerId);
     parentElem.style.display = "block";
@@ -1759,14 +1763,14 @@ class Tile extends Item {
     return {
       fit: this.fit,
       iframe: this.iframe,
-      mimetype: this.mimetype;
-      position: this.position;
+      mimetype: this.mimetype,
+      position: this.position,
       refreshInterval: this.refreshInterval,
       rotateInterval: this.rotateInterval,
       scale: this.scale,
       sources: this.sources.toSpec(),
       title: this.title,
-      video: this.video;
+      video: this.video,
     };
   }
 }
