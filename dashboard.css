@@ -86,6 +86,8 @@ body, html {
   position: relative;
   text-align: center;
   text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .top-bar-button a {
@@ -263,9 +265,9 @@ body, html {
 }
 
 .tile-menu-icon, .focused-tile-menu-icon {
-  background-color: #00000022;
+  background-color: #00000044;
   border-radius: 0.3em;
-  color: #777777;
+  color: #cccccc;
   font-size: 1em;
   font-weight: bold;
   position: absolute;
@@ -275,25 +277,6 @@ body, html {
 .tile-menu-icon:hover, .focused-tile-menu-icon:hover {
   background-color: #333333;
   color: white;
-}
-
-.tile-menu-item a, .focused-tile-menu-item a {
-  background-color: #77777755;
-  border-radius: 0.7em;
-  color: white;
-  float: inline-start;
-  font-family: sans-serif;
-  font-optical-sizing: auto;
-  font-size: 1vw;
-  font-style: normal;
-  font-weight: bold;
-  margin: 0.1em;
-  padding-bottom: 0.5em;
-  padding-left: 0.7em;
-  padding-right: 0.7em;
-  padding-top: 0.5em;
-  text-align: center;
-  text-decoration: none;
 }
 
 .tile-image, .tile-iframe, .tile-video, .focused-tile-image, .focused-tile-iframe, .focused-tile-video {
@@ -321,14 +304,14 @@ body, html {
   border-radius: 0.7em;
   color: white;
   font-optical-sizing: auto;
-  font-size: 1vw;
+  font-size: 1em;
   font-style: normal;
   font-weight: 300;
   left: 50%;
-  padding-top: 0.1vw;
-  padding-bottom: 0.1vw;
-  padding-left: 0.3vw;
-  padding-right: 0.3vw;
+  padding-top: 0.1em;
+  padding-bottom: 0.1em;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
   position: absolute;
   top: 0em;
   transform: translateX(-50%);
@@ -365,12 +348,11 @@ body, html {
 }
 
 #menu-container {
-  display: grid;
+  display: block;
   height: auto;
   position: absolute;
-  position: fixed;
-  right: 9em;
-  top: 4.5em;
+  right: 5em;
+  top: 6.3em;
   transition: 0.3s;
   z-index: 20;
 }
@@ -380,14 +362,15 @@ body, html {
   width: 3em;
 }
 
-.menu-item a {
-  background-color: #77777755;
+.menu-item a, .tile-menu-item a, .focused-tile-menu-item a{
+  opacity: 50%;
+  background-color: #777777;
   border-radius: 0.7em;
   color: white;
   float: inline-start;
   font-family: sans-serif;
   font-optical-sizing: auto;
-  font-size: 1vw;
+  font-size: 1em;
   font-style: normal;
   font-weight: bold;
   margin-top: 0.5em;
@@ -399,11 +382,13 @@ body, html {
   text-align: center;
   text-decoration: none;
   transition: 0.3s;
-  width: 5vw;
+  width: 5em;
 }
 
-.menu-item a:hover, .tile-menu-item:hover {
+.menu-item a:hover, .tile-menu-item a:hover, .focused-tile-menu-item a:hover {
+  opacity: 85%;
   background-color: #777777;
+  border-radius: 0.7em;
 }
 
 .overlay {
