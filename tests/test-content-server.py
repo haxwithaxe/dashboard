@@ -19,7 +19,6 @@ def cleanup(test_dir):
     test_dir.joinpath('dashboard.css').unlink()
     test_dir.joinpath('lib.js').unlink()
     test_dir.joinpath('main.js').unlink()
-    test_dir.joinpath('wheelzoom.js').unlink()
     test_dir.joinpath('config.js').unlink()
 
 
@@ -191,7 +190,6 @@ def main():
     test_dir.joinpath('dashboard.css').symlink_to(code_dir.joinpath('dashboard.css'))
     test_dir.joinpath('lib.js').symlink_to(code_dir.joinpath('lib.js'))
     test_dir.joinpath('main.js').symlink_to(code_dir.joinpath('main.js'))
-    test_dir.joinpath('wheelzoom.js').symlink_to(code_dir.joinpath('wheelzoom.js'))
     test_dir.joinpath('config.js').symlink_to(pathlib.Path(args.config).absolute())
     with contextlib.suppress(KeyboardInterrupt):
         serve(

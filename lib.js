@@ -781,6 +781,257 @@ class Feeds extends UrlCollection {
 }
 
 
+
+/* A helper to manage image pan and zoom.
+ *
+ * Attributes:
+ *   zoom (number): Zoom level increment. Defaults to 0.10 (10%).
+ *   initialZoom (number): Initial zoom level. Defaults to 1 (100%).
+ *   initialX (number): Initial X position. Defaults to 0.5.
+ *   initialY (number): Initial Y position. 0.5;
+ *   fit (string): Fit the image to  "height", "width", "stretch" (to fit tile),
+ *     or "preserve" (to preserve the aspect ratio). Defaults to "stretch".
+ *   position: Value for CSS background-position when at default zoom. Defaults
+ *     to "center".
+ *
+ * Arguments:
+ *   imageId (string): HTML element ID of the target image.
+ *   options (Object): Values for the attributes of the helper object.
+ */
+class ImageHelper {
+
+  zoom = 0.10;
+  initialZoom = 1;
+  initialX = 0.5;
+  initialY = 0.5;
+  fit = "stretch";
+  position = "center";
+
+  #height;  // final height of image at 100% zoom
+  #width;  // final width of image at 100% zoom
+  #bgHeight;  // The current height of the background
+  #bgWidth;  // The current width of the background
+  #posX;  // X position of the background
+  #posY;  // Y position of the background
+  #previousEvent;  // The event used for zooming
+  #placeholder;  // A placeholder image to stick in src
+
+  constructor(imageId, options) {
+    this.imageId = imageId;
+    this.update(options);
+    this.onload = this._onload.bind(this);
+    this.onmousedown = this._onmousedown.bind(this);
+    this.onmousemove = this._onmousemove.bind(this);
+    this.onmouseup = this._onmouseup.bind(this);
+    this.onwheel = this._onwheel.bind(this);
+  }
+
+  get image() {
+    return document.getElementById(this.imageId);
+  }
+
+  // Update the values of the public attributes.
+  update(options) {
+    this.zoom = options.zoom !== undefined ? options.zoom : this.zoom;
+    this.initialZoom = options.initialZoom !== undefined ? options.initialZoom : this.initialZoom;
+    this.initialX = options.initialX !== undefined ? options.initialX : this.initialX;
+    this.initialY = options.initialY !== undefined ? options.initialY : this.initialY;
+    this.fit = options.fit !== undefined ? options.fit : this.fit;
+    this.position = options.position !== undefined ? options.position : this.position;
+  }
+
+  // Figure out the exact dimensions of the background image.
+  calculateInitialDimensions() {
+      const initial = Math.max(this.initialZoom, 1);
+      const computedStyle = window.getComputedStyle(this.image, null);
+      const computedWidth = parseInt(computedStyle.width, 10);
+      const computedHeight = parseInt(computedStyle.height, 10);
+      const naturalWidth = parseInt(this.image.naturalWidth, 10);
+      const naturalHeight = parseInt(this.image.naturalHeight, 10);
+      const widthRatio = naturalWidth / computedWidth;
+      const heightRatio = naturalHeight / computedHeight;
+      const naturalAspectRatio = naturalWidth / naturalHeight;
+      const computedAspectRatio = computedWidth / computedHeight;
+      // Default behavior is to stretch to fit
+      this.#width = computedWidth;
+      this.#height = computedHeight;
+      if (computedAspectRatio >= 1) {
+          // Tile is wider than it is tall, or maybe perfectly square
+          if (this.fit == "width") {
+              this.#height = naturalHeight / widthRatio;
+          } else if (this.fit == "height") {
+              this.#width = naturalWidth / heightRatio;
+          } else if (this.fit == "preserve") {
+              // Preserve aspect ratio and fit in tile
+              if (naturalAspectRatio > 1) {
+                  // Wider than tall - shrink height to fit width
+                  this.#height = naturalHeight / widthRatio;
+              } else if (naturalAspectRatio < 1) {
+                  // Taller than wide - shrink width to fit width
+                  this.#width = naturalWidth / heightRatio;
+              } else {
+                  // Perfectly square image - shrink width to fit width
+                  this.#width = naturalWidth / heightRatio;
+              }
+          }
+      } else if (computedAspectRatio < 1) {
+          // Tile is taller than it is wide
+          if (this.fit == "width") {
+              this.#height = naturalHeight / widthRatio;
+          } else if (this.fit == "height") {
+              this.#width = naturalWidth / heightRatio;
+          } else if (this.fit == "preserve") {
+              // Preserve aspect ratio and fit in tile
+              if (naturalAspectRatio > 1) {
+                  // Wider than tall - shrink width to fit height
+                  this.#width = naturalWidth / heightRatio;
+              } else if (naturalAspectRatio < 1) {
+                  // Taller than wide - shrink height to fit height
+                  this.#height = naturalHeight / widthRatio;
+              } else {
+                  // Perfectly square image - shrink height to fit height
+                  this.#height = naturalHeight / widthRatio;
+              }
+          }
+      }  // Default behavior is to stretch to fit
+      this.#bgWidth = this.#width * initial;
+      this.#bgHeight = this.#height * initial;
+      this.#posX = -(this.#bgWidth - this.#width) * 0.5;
+      this.#posY = -(this.#bgHeight - this.#height) * 0.5;
+  }
+
+  // Unbound onload callback
+  _onload(event) {
+    if (this.#placeholder !== undefined && this.image.src == this.#placeholder) {
+      return;
+    }
+    this.calculateInitialDimensions();
+    this.image.style.backgroundImage = `url("${this.image.src}")`;
+    this.#placeholder = "data:image/svg+xml;base64,"
+      + window.btoa(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${this.image.naturalWidth}" height="${this.image.naturalHeight}"></svg>`
+      );
+    this.image.src = this.#placeholder;
+    this.updateStyle();
+    this.image.onmousedown = this.onmousedown;
+    this.image.onwheel = this.onwheel;
+  }
+
+  // Unbound onmousedown callback
+  _onmousedown(event) {
+    event.preventDefault();
+    this.previousEvent = event;
+    document.addEventListener("mousemove", this.onmousemove);
+    document.addEventListener("mouseup", this.onmouseup, {once: true});
+  }
+
+  // Unbound onmousemove callback
+  _onmousemove(event) {
+    event.preventDefault();
+    if (this.#previousEvent == undefined) {
+      this.#previousEvent = event;
+      return;
+    }
+    this.#posX += event.pageX - this.#previousEvent.pageX;
+    this.#posY += event.pageY - this.#previousEvent.pageY;
+    this.#previousEvent = event;
+    this.updateStyle();
+  }
+
+  // Unbound onmouseup callback
+  _onmouseup(event) {
+    document.removeEventListener('mousemove', this.onmousemove);
+  }
+
+  // Unbound onwheel callback
+  _onwheel(event) {
+    event.preventDefault();
+    var deltaY = 0;
+    if (event.deltaY) { // FireFox 17+ (IE9+, Chrome 31+?)
+        deltaY = event.deltaY;
+    } else if (event.wheelDelta) {
+        deltaY = -event.wheelDelta;
+    }
+    // As far as I know, there is no good cross-browser way to get the cursor position relative to the event target.
+    // We have to calculate the target element's position relative to the document, and subtrack that from the
+    // cursor's position relative to the document.
+    const rect = this.image.getBoundingClientRect();
+    var offsetX = event.pageX - rect.left - window.pageXOffset;
+    var offsetY = event.pageY - rect.top - window.pageYOffset;
+    // Record the offset between the bg edge and cursor:
+    const bgCursorX = offsetX - this.#posX;
+    const bgCursorY = offsetY - this.#posY;
+    // Use the previous offset to get the percent offset between the bg edge and cursor:
+    const bgRatioX = bgCursorX/this.#bgWidth;
+    const bgRatioY = bgCursorY/this.#bgHeight;
+    // Update the bg size:
+    if (deltaY < 0) {
+        this.#bgWidth += this.#bgWidth * this.zoom;
+        this.#bgHeight += this.#bgHeight * this.zoom;
+    } else {
+        this.#bgWidth -= this.#bgWidth * this.zoom;
+        this.#bgHeight -= this.#bgHeight * this.zoom;
+    }
+    // Take the percent offset and apply it to the new size:
+    this.#posX = offsetX - (this.#bgWidth * bgRatioX);
+    this.#posY = offsetY - (this.#bgHeight * bgRatioY);
+    // Prevent zooming out beyond the starting size
+    if (this.#bgWidth <= this.#width || this.#bgHeight <= this.#height) {
+        this.resetZoom();
+    } else {
+        this.updateStyle();
+    }
+  }
+
+  // Reset the pan and zoom.
+  resetZoom() {
+    this.#posX = 0;
+    this.#posY = 0;
+    this.#bgHeight = this.#height;
+    this.#bgWidth = this.#width;
+    this.updateStyle();
+  }
+
+  // Set the image source.
+  set(url) {
+    this.#placeholder = undefined;
+    this.image.onload = this.onload.bind(this);
+    // Need to load the image before the dimensions can be computed.
+    this.image.src = url;
+  }
+
+  // Undo everything that was done to the image element.
+  teardown() {
+    // Remove event listeners
+    this.image.replaceWith(this.image.cloneNode(true));
+    // Sloppily replace the image source
+    this.image.src = this.image.style.backgroundImage;
+    // Clear out the background
+    this.image.style.backgroundImage = "";
+  }
+
+  // Update the style attributes of the image.
+  updateStyle() {
+    if (this.#posX > 0) {
+      this.#posX = 0;
+    } else if (this.#posX < this.#width - this.#bgWidth) {
+      this.#posX = this.#width - this.#bgWidth;
+    }
+    if (this.#posY > 0) {
+      this.#posY = 0;
+    } else if (this.#posY < this.#height - this.#bgHeight) {
+      this.#posY = this.#height - this.#bgHeight;
+    }
+    this.image.style.backgroundSize = `${this.#bgWidth}px ${this.#bgHeight}px`;
+    if (this.#posX == 0 && this.#posY == 0 && this.position) {
+      this.image.style.backgroundPosition = this.position;
+    } else {
+      this.image.style.backgroundPosition = `${this.#posX}px ${this.#posY}px`;
+    }
+  }
+}
+
+
 /* Menu item config and display.
  *
  * Attributes:
@@ -1079,6 +1330,7 @@ class Tile extends Item {
 
   parentContainerId = "tiles-container";
   templateId = "tile-item";
+  _imageHelper;
 
   /* Create a new Tile.
    *
@@ -1126,6 +1378,7 @@ class Tile extends Item {
     this.menuIconId = `menu-icon-${this.id}`;
     super.postConstructor();
     this.insertMenu();
+    this._imageHelper = new ImageHelper(this.imageId, this);
   }
 
   get errorElem() {
@@ -1340,6 +1593,8 @@ class Tile extends Item {
 
   // Show the appropriate element in the tile.
   show() {
+    // Remove the event handlers and reset the image no matter what
+    this._imageHelper.teardown()
     if (this.isVideo()) {
       this.showVideo();
     } else if (this.isFrame()) {
@@ -1347,12 +1602,6 @@ class Tile extends Item {
     } else {
       // Is image
       this.showImage();
-      if (this.wheelzoom === undefined) {
-        this.wheelzoom = wheelzoom(this.imageElem, {fit: this.sources.current.fit, position: this.sources.current.position});
-      } else {
-        this.wheelzoom.destroy();
-        this.wheelzoom.load({fit: this.sources.current.fit, position: this.sources.current.position});
-      }
     }
   }
 
@@ -1402,8 +1651,7 @@ class Tile extends Item {
     }
     this.imageElem.classList.remove("hidden");
     // Image cache prevention
-    // Check if the image URL already include parameters, then avoid the random timestamp
-    this.imageElem.src = url.includes("?") ? url : url + "?_=" + Date.now();
+    this._imageHelper.set(`${url.includes("?") ? url : url}?_=${Date.now()}`);
     this.imageElem.onerror = (() => {
       // The event for img.onerror doesn't give any info about the request so
       //   not bothering with it.
