@@ -264,7 +264,7 @@ img {
   display: grid;
   height: auto;
   position: relative;
-  top: 3em;
+  top: 1em;
   transition: 0.3s;
 }
 
@@ -356,7 +356,7 @@ img {
   height: auto;
   position: absolute;
   right: 5em;
-  top: 6.3em;
+  top: 4.3em;
   transition: 0.3s;
   z-index: 20;
 }
