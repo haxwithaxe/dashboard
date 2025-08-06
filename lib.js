@@ -209,7 +209,7 @@ function parseInterval(interval_string) {
     function(match) {
       if (match.length < 3) {
         console.debug("Got a match with less than 3 elements.", match);
-        return
+        return;
       }
       var quant = Number.parseFloat(match[1]);
       var unit = match[2];
@@ -259,20 +259,6 @@ function showFocusedTile() {
   const tile = document.getElementById("focused-tile-parent");
   tile.style.display = "block";
   tile.style.zIndex = 2;
-}
-
-
-/* Show an error message to the user.
- *
- * Arguments:
- *   text: The error text to show the user.
- */
-function showGlobalError(text) {
-  const errorElem = document.getElementById("global-error");
-  const message = createFromTemplate("error-message");
-  message.innerText = `Error: ${text}`;
-  errorElem.appendChild(message);
-  errorElem.classList.remove("hidden");
 }
 
 
@@ -334,47 +320,6 @@ class Item {
     this.insert();
   }
 
-  /* Populates an HTML fragment with Item values.
-   *
-   * Arguments:
-   *   fragment: An HTML fragment or element to modify.
-   *
-   * Returns:
-   *   The modified fragment.
-   */
-  populateTemplate(fragment) {
-    return fragment;
-  }
-
-  // Insert the Item's element into the DOM.
-  insert() {
-    if (this.templateId === undefined) {
-      // No template required so skip this.
-      return;
-    }
-    this.fragment = createFromTemplate(this.templateId);
-    this.fragment.childNodes.forEach((child) => child.id = this.id);
-    this.fragment = this.populateTemplate(this.fragment);
-    this.setCallbacks(this.fragment);
-    if (this.containerElem == null || this.containerElem === undefined) {
-      document.getElementById(this.parentContainerId).appendChild(this.fragment);
-    } else {
-      this.containerElem.replaceWith(this.fragment);
-    }
-  }
-
-  /* Set various callbacks on an HTML fragment.
-   * 
-   * Arguments:
-   *   fragment: An HTML fragment or element.
-   *
-   * Returns:
-   *   The modified fragment.
-   */
-  setCallbacks(fragment) {
-    return fragment;
-  }
-
   // Returns the outermost element of the Item.
   get containerElem() {
     return document.getElementById(this.id);
@@ -398,6 +343,47 @@ class Item {
       }
     }
     return true;
+  }
+
+  // Insert the Item's element into the DOM.
+  insert() {
+    if (this.templateId === undefined) {
+      // No template required so skip this.
+      return;
+    }
+    this.fragment = createFromTemplate(this.templateId);
+    this.fragment.childNodes.forEach((child) => child.id = this.id);
+    this.fragment = this.populateTemplate(this.fragment);
+    this.setCallbacks(this.fragment);
+    if (this.containerElem == null || this.containerElem === undefined) {
+      document.getElementById(this.parentContainerId).appendChild(this.fragment);
+    } else {
+      this.containerElem.replaceWith(this.fragment);
+    }
+  }
+
+  /* Populates an HTML fragment with Item values.
+   *
+   * Arguments:
+   *   fragment: An HTML fragment or element to modify.
+   *
+   * Returns:
+   *   The modified fragment.
+   */
+  populateTemplate(fragment) {
+    return fragment;
+  }
+
+  /* Set various callbacks on an HTML fragment.
+   * 
+   * Arguments:
+   *   fragment: An HTML fragment or element.
+   *
+   * Returns:
+   *   The modified fragment.
+   */
+  setCallbacks(fragment) {
+    return fragment;
   }
 }
 
@@ -587,6 +573,14 @@ class Config extends Item {
     this._popup.show(label, message);
   }
 
+  // Initialize the dashboard.
+  start() {
+    hideFocusedContainer();
+    this.topBar.show();
+    this.menu.hide();
+    this.tiles.start();
+  }
+
   toSpec() {
     return {
       columns: this.columns,
@@ -598,14 +592,6 @@ class Config extends Item {
       tiles: this.tiles.toSpec(),
       topBar: this.topBar.toSpec(),
     };
-  }
-
-  // Initialize the dashboard.
-  start() {
-    hideFocusedContainer();
-    this.topBar.show();
-    this.menu.hide();
-    this.tiles.start();
   }
 }
 
@@ -653,16 +639,26 @@ class Feed extends Item {
     return this._writeLock;
   }
 
-  lock() {
-    if (this.locked) {
-      return false;
+  // Asynchronously download the feed.
+  fetch() {
+    if (!this.lock()) {
+      return;
     }
-    this._writeLock = true;
-    return true;
-  }
-
-  unlock() {
-    this._writeLock = false;
+    var url = proxyUrl + "?url=" + encodeURIComponent(this.url);
+    if (this.url.includes("://localhost")) {
+      url = this.url;
+    }
+    fetch(url)
+      .then((response) => response.text())
+      .then((data) => {
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(data, "text/xml");
+        this.parse(xmlDoc);
+        this.unlock();
+      }).catch((error) => {
+        console.error(`Error fetching feed from ${this.url}:`, error);
+        this.unlock();
+      });
   }
 
   insert() {
@@ -672,14 +668,12 @@ class Feed extends Item {
     }
   }
 
-  toSpec() {
-    return {
-      bgColor: this.bgColor,
-      refreshInterval: this.refreshInterval,
-      textColor: this.textColor,
-      titleTextColor: this.titleTextColor,
-      url: this.url,
+  lock() {
+    if (this.locked) {
+      return false;
     }
+    this._writeLock = true;
+    return true;
   }
 
   // Parse the downloaded feed and display it.
@@ -741,26 +735,18 @@ class Feed extends Item {
     }
   }
 
-  // Asynchronously download the feed.
-  fetch() {
-    if (!this.lock()) {
-      return;
+  toSpec() {
+    return {
+      bgColor: this.bgColor,
+      refreshInterval: this.refreshInterval,
+      textColor: this.textColor,
+      titleTextColor: this.titleTextColor,
+      url: this.url,
     }
-    var url = proxyUrl + "?url=" + encodeURIComponent(this.url);
-    if (this.url.includes("://localhost")) {
-      url = this.url;
-    }
-    fetch(url)
-      .then((response) => response.text())
-      .then((data) => {
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(data, "text/xml");
-        this.parse(xmlDoc);
-        this.unlock();
-      }).catch((error) => {
-        console.error(`Error fetching feed from ${this.url}:`, error);
-        this.unlock();
-      });
+  }
+
+  unlock() {
+    this._writeLock = false;
   }
 }
 
@@ -1092,17 +1078,6 @@ class MenuItem extends Item {
     return fragment;
   }
 
-  toSpec() {
-    return {
-      bgColor: this.bgColor,
-      order: this.order,
-      scale: this.scale,
-      text: this.text,
-      textColor: this.textColor,
-      url: this.url,
-    }; 
-  }
-
   show() {
     var link = this.containerElem.querySelector("a");
     link.onclick = this.onClickCallback;
@@ -1113,6 +1088,17 @@ class MenuItem extends Item {
     if (this.textColor != null) {
       link.style.color = this.textColor;
     }
+  }
+
+  toSpec() {
+    return {
+      bgColor: this.bgColor,
+      order: this.order,
+      scale: this.scale,
+      text: this.text,
+      textColor: this.textColor,
+      url: this.url,
+    }; 
   }
 }
 
@@ -1135,6 +1121,12 @@ class Menu extends Collection {
     this.get(menuItemId).focus();
   }
 
+  // Hide the user menu and global menu.
+  hide() {
+    document.getElementById("menu-container").style.display = "none";
+    document.getElementById("global-menu-icon").onclick = (() => this.show());
+  }
+
   insert() {
     return;  // This has no elements to insert.
   }
@@ -1145,12 +1137,6 @@ class Menu extends Collection {
     document.getElementById("global-menu-icon").onclick = (() => this.hide());
     this.children.forEach((child) => child.show());
   }
-
-  // Hide the user menu and global menu.
-  hide() {
-    document.getElementById("menu-container").style.display = "none";
-    document.getElementById("global-menu-icon").onclick = (() => this.show());
-  }
 }
 
 // Modal popup dialog.
@@ -1159,16 +1145,16 @@ class PopUp extends Item {
   templateId = "popup";
   parentContainerId = "popup-container";
 
-  insert() {
-    return;
-  }
-
   hide() {
     if (this.containerElem === undefined) {
       return;
     }
     this.containerElem.remove();
     document.getElementById(this.parentContainerId).style.display = "none";
+  }
+
+  insert() {
+    return;
   }
 
   /* Show the popup.
@@ -1423,6 +1409,20 @@ class Tile extends Item {
     return this.videoElem.querySelector("source");
   }
 
+  clearRefreshTimeout() {
+    if (this.refreshTimeoutRef !== undefined) {
+      clearTimeout(this.refreshTimeoutRef);
+      this.refreshTimeoutRef = undefined;
+    }
+  }
+
+  clearRotateTimeout() {
+    if (this.rotateTimeoutRef !== undefined) {
+      clearTimeout(this.rotateTimeoutRef);
+      this.rotateTimeoutRef = undefined;
+    }
+  }
+
   // Get the callback that focuses the tile.
   getFocusCallback() {
     function showFocused(event) {
@@ -1535,6 +1535,14 @@ class Tile extends Item {
     return this.sources.current.iframe;
   }
 
+  // True if the URL of the current source is probably a video. 
+  isVideo() {
+    if (this.sources.current.video) {
+      return true;
+    }
+    return videoExtensions.some((ext) => this.sources.current.url.includes(ext));
+  }
+
   populateTemplate(fragment) {
     const title = this.fragment.querySelector(".tile-title");
     if (this.getTitle() == null) {
@@ -1559,14 +1567,6 @@ class Tile extends Item {
     fragment.querySelector(".tile-menu-icon").onclick = this.getTileMenuCallback();
   }
 
-  // True if the URL of the current source is probably a video. 
-  isVideo() {
-    if (this.sources.current.video) {
-      return true;
-    }
-    return videoExtensions.some((ext) => this.sources.current.url.includes(ext));
-  }
-
   // Select the next source and return this instance.
   next() {
     this.sources.next();
@@ -1589,6 +1589,38 @@ class Tile extends Item {
       this.setRotateTimeout();
     }
     this.refresh();
+  }
+
+  setRefreshTimeout() {
+    const interval = parseInterval(this.sources.current.refreshInterval);
+    if (interval > 0) {
+      this.refreshTimeoutRef = setInterval(
+        (() => this.refresh()),
+        parseInterval(interval)
+      );
+    }
+  }
+
+  setRotateTimeout() {
+    var interval = 0;
+    if (this.sources.current.rotateInterval == null && this.sources.current.refreshInterval == null) {
+      interval = parseInterval(this.rotateInterval != null ? this.rotateInterval : "5m");
+    } else {
+      interval = parseInterval(this.sources.current.rotateInterval);
+    }
+    if (interval > 0) {
+      this.rotateTimeoutRef = setInterval((() => this.rotate()), interval);
+    }
+  }
+
+  setTitle() {
+    const title = this.getTitle();
+    this.titleElem.innerHTML = title;
+    if (title == null) {
+      this.titleElem.style.display = "none";
+    } else {
+      this.titleElem.style.display = "block";
+    }
   }
 
   // Show the appropriate element in the tile.
@@ -1693,6 +1725,20 @@ class Tile extends Item {
     this.imageElem.classList.add("hidden");
   }
 
+  // Default values for child sources
+  sourceDefaults() {
+    return {
+      fit: this.fit,
+      iframe: this.iframe,
+      mimetype: this.mimetype,
+      position: this.position,
+      refreshInterval: this.refreshInterval,
+      rotateInterval: this.rotateInterval,
+      scale: this.scale,
+      video: this.video,
+    };
+  }
+
   // Load the tile and set the rotate and refresh timeouts.
   start() {
     this.show();
@@ -1709,74 +1755,18 @@ class Tile extends Item {
     this.clearRotateTimeout();
   }
 
-  setTitle() {
-    const title = this.getTitle();
-    this.titleElem.innerHTML = title;
-    if (title == null) {
-      this.titleElem.style.display = "none";
-    } else {
-      this.titleElem.style.display = "block";
-    }
-  }
-
   toSpec() {
     return {
-      title: this.title,
       fit: this.fit,
       iframe: this.iframe,
+      mimetype: this.mimetype;
+      position: this.position;
       refreshInterval: this.refreshInterval,
       rotateInterval: this.rotateInterval,
       scale: this.scale,
       sources: this.sources.toSpec(),
-    };
-  }
-
-  clearRefreshTimeout() {
-    if (this.refreshTimeoutRef !== undefined) {
-      clearTimeout(this.refreshTimeoutRef);
-      this.refreshTimeoutRef = undefined;
-    }
-  }
-
-  clearRotateTimeout() {
-    if (this.rotateTimeoutRef !== undefined) {
-      clearTimeout(this.rotateTimeoutRef);
-      this.rotateTimeoutRef = undefined;
-    }
-  }
-
-  setRefreshTimeout() {
-    const interval = parseInterval(this.sources.current.refreshInterval);
-    if (interval > 0) {
-      this.refreshTimeoutRef = setInterval(
-        (() => this.refresh()),
-        parseInterval(interval)
-      );
-    }
-  }
-
-  setRotateTimeout() {
-    var interval = 0;
-    if (this.sources.current.rotateInterval == null && this.sources.current.refreshInterval == null) {
-      interval = parseInterval(this.rotateInterval != null ? this.rotateInterval : "5m");
-    } else {
-      interval = parseInterval(this.sources.current.rotateInterval);
-    }
-    if (interval > 0) {
-      this.rotateTimeoutRef = setInterval((() => this.rotate()), interval);
-    }
-  }
-
-  sourceDefaults() {
-    return {
-      fit: this.fit,
-      iframe: this.iframe,
-      mimetype: this.mimetype,
-      position: this.position,
-      refreshInterval: this.refreshInterval,
-      rotateInterval: this.rotateInterval,
-      scale: this.scale,
-      video: this.video,
+      title: this.title,
+      video: this.video;
     };
   }
 }
@@ -1806,6 +1796,45 @@ class FocusedTile extends Tile {
     this.insertMenu();
     showFocusedTile();
     super.show();
+  }
+
+  // Called in superclass Tile.
+  // Returns a function that defocuses this Item.
+  getFocusCallback() {
+    function defocus(event) {
+      event.preventDefault();
+      dashboard.menu.defocus()
+      dashboard.tiles.defocus();
+    }
+    return defocus;
+  }
+
+  getRefreshCallback() {
+    function refresh(event) {
+      event.preventDefault();
+      dashboard.tiles.focused.refresh();
+    }
+    return refresh;
+  }
+
+  getRotateCallback() {
+    function rotate(event) {
+      event.preventDefault();
+      dashboard.tiles.focused.rotate();
+    }
+    return rotate;
+  }
+
+  getTileMenuCallback() {
+    function showMenu(event) {
+      event.preventDefault();
+      dashboard.tiles.focused.showMenu();
+    }
+    return showMenu;
+  }
+
+  hide() {
+    this.containerElem.remove();
   }
 
   hideMenu() {
@@ -1850,45 +1879,6 @@ class FocusedTile extends Tile {
     });
     this.hideMenu();
   }
-
-  // Called in superclass Tile.
-  // Returns a function that defocuses this Item.
-  getFocusCallback() {
-    function defocus(event) {
-      event.preventDefault();
-      dashboard.menu.defocus()
-      dashboard.tiles.defocus();
-    }
-    return defocus;
-  }
-
-  getRefreshCallback() {
-    function refresh(event) {
-      event.preventDefault();
-      dashboard.tiles.focused.refresh();
-    }
-    return refresh;
-  }
-
-  getRotateCallback() {
-    function rotate(event) {
-      event.preventDefault();
-      dashboard.tiles.focused.rotate();
-    }
-    return rotate;
-  }
-
-  getTileMenuCallback() {
-    function showMenu(event) {
-      event.preventDefault();
-      dashboard.tiles.focused.showMenu();
-    }
-    return showMenu;
-  }
-
-  hide() {
-    this.containerElem.remove();
-  }
 }
 
 
@@ -1921,6 +1911,7 @@ class Tiles extends Collection {
     this.start();
   }
 
+  // Get a tile by its ID
   get(tileId) {
     // Tiles can match the IDs of any of their elements so this had to be
     //   reimplemented with idEquals().
@@ -1964,6 +1955,10 @@ class Tiles extends Collection {
  *   text (string): The text to display in the top bar part.
  *   textColor (HTML color code): Override the text color.
  *   bgColor (HTML color code): Override the background color.
+  *  dateFormat (string): Override the date format.
+  *  dateFormatLocale (string): Specify the locale to format the date.
+  *  dateFormatTimeZone (string): Specify the IANA time zone for date
+  *    formatting.
  */
 class TopBarPart extends Item {
 
