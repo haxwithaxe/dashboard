@@ -97,6 +97,21 @@ function getDateFormatter(formatStr, timezone, locale) {
   });
 }
 
+/* Pad a string with 0's.
+ *
+ * Arguments:
+ *   string (string): A string to pad with 0's.
+ *   length (integer, optional): The full length of the padded string. Defaults
+ *     to 2.
+ *
+ * Returns:
+ *   A zero padded string of length `length`.
+ */
+function zeroPad(string, length) {
+  length = length !== undefined ? length : 2;
+  return string.padStart(length, "0");
+}
+
 
 /* Get the various parts of the date and time.
  *
@@ -134,7 +149,7 @@ function getDateParts(date, timezone, locale) {
     hours12: localeString({hour: "2-digit", hour12: true}),
     hours12Num: localeString({hour: "numeric", hour12: true}),
     minutes: localeString({minute: "2-digit"}),
-    seconds: localeString({second: "2-digit"}),
+    seconds: zeroPad(localeString({second: "2-digit"})),
     amPm: localeString({hour12: true}).split(" ").slice(-1)[0],
     timezone: localeString({timeZoneName: "short"}, "en-US").slice(-3),
   };
