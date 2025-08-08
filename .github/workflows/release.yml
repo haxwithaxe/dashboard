@@ -19,10 +19,7 @@ jobs:
         with:
           token: ${{ github.token }}
           tag: ${{ github.ref_name }}
-          restrictToTypes: 
-            - feat
-            - fix
-            - refactor
+          restrictToTypes: feat, fix, refactor
 
       - name: Release
         uses: softprops/action-gh-release@v2
