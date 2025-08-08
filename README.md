@@ -3,7 +3,7 @@
 
 This is a dashboard based loosely on [hamdashboard](https://github.com/VA3HDL/hamdashboard). The configuration interface is "simplified" and it has a few more small features.
 
-See the output from the [example](#full-example) at the bottom of the page [here](https://haxwithaxe.github.io/dashboard/)
+See the live output from the [example](#full-example) at the bottom of the page [here](https://haxwithaxe.github.io/dashboard/).
 
 # Usage
 There are a couple good options.
@@ -372,5 +372,7 @@ const userSettings = {
   ],
 }
 ```
+
+See the live output [here](https://haxwithaxe.github.io/dashboard/).
 
 ![Sample output from the above example](docs/sample.png)
