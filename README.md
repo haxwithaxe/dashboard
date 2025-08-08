@@ -270,7 +270,7 @@ const userSettings = {
     },
     {
       url: "https://daily.hamweekly.com/atom.xml",
-      refreshInterval: "12h",
+      refreshInterval: "1d",
     },
   ],
 
@@ -287,6 +287,7 @@ const userSettings = {
       refreshInterval: "15m",
     },
     {
+      title: "",
       sources: [
         {
           title: "7 day",
@@ -311,6 +312,7 @@ const userSettings = {
       ],
     }, 
     {
+      title: "",
       sources: "https://earth.nullschool.net/#current/wind/surface/level/annot=fires",
       iframe: true,
       rotateInterval: 0,
@@ -338,27 +340,35 @@ const userSettings = {
         "https://services.swpc.noaa.gov/images/animations/suvi/primary/195/latest.png",
         "https://services.swpc.noaa.gov/images/animations/suvi/primary/284/latest.png",
       ],
+      fit: "preserve",
     },
     {
+      title: "",
       sources: "https://services.swpc.noaa.gov/images/swx-overview-large.gif",
       refreshInterval: "30m",
     },
     {
+      title: "",
       sources: [
         "https://www.tvcomm.co.uk/g7izu/Autosave/HF_ZERO1_AutoSave.JPG",
         "https://www.tvcomm.co.uk/g7izu/Autosave/ATL_HF10_AutoSave.JPG",
         "https://www.tvcomm.co.uk/g7izu/Autosave/PACIFIC_HF_AutoSave.JPG",
       ],
+      fit: "preserve",
       rotateInterval: "2m",
     },
     {
+      title: "",
       sources: "https://www.hamqsl.com/solarbc.php",
       refreshInterval: "1h",
     },
     {
-      sources: "https://www.hamqsl.com/solarsmall.php",
-      refreshInterval: "1h",
+      title: "",
+      sources: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4",
+      rotateInterval: "0",
     },
   ],
 }
 ```
+
+![Sample output from the above example](docs/sample.png)
