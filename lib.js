@@ -1178,7 +1178,7 @@ class PopUp extends Item {
    *   label (string): Popup dialog label/title text/html.
    *   message (string): Popup dialog body text/html.
    */
-  show(label, message) {
+  show(label, message, close) {
     super.insert();
     this.containerElem.querySelector(".popup-label").innerHTML = label;
     if (typeof message == "string") {
@@ -1186,7 +1186,11 @@ class PopUp extends Item {
     } else {
       this.containerElem.querySelector(".popup-body").appendChild(message);
     }
-    this.containerElem.querySelector(".button").onclick = (() => this.hide());
+    if (close === undefined || close) {
+      this.containerElem.querySelector(
+        ".popup-close-button"
+      ).onclick = this.hide.bind(this);
+    }
     const parentElem = document.getElementById(this.parentContainerId);
     parentElem.style.display = "block";
     parentElem.style.zIndex = 20;
