@@ -4,7 +4,7 @@ const helpText = `<div class="popup-text">
   <p class="popup-text">Use the global menu button in the top right to access the global menu.</p>
 </div>`
 // Load from value in config.js
-window.dashboard = Config.create(userSettings);
+window.dashboard = Dashboard.create(userSettings);
 
 document.getElementById("refresh-button").querySelector("a").onclick = (() => {
   window.location.reload();

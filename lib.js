@@ -566,7 +566,7 @@ class UrlCollection extends Collection {
  *   tiles (Tiles): The Collection of tiles.
  *   topBar (TopBar): The top bar.
  */
-class Config extends Item {
+class Dashboard extends Item {
 
   columns = 4;
   rows = 3;
