@@ -1,4 +1,4 @@
-const currentVersion = "v2025.04.02";
+const currentVersion = "v0.1.1";
 const projectReleasesUrl = "https://github.com/haxwithaxe/dashboard/releases/"
 const projectLatestReleaseApiUrl = "https://api.github.com/repos/haxwithaxe/dashboard/releases/latest"
 const proxyUrl = "https://corsproxy.io/";
