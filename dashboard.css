@@ -195,9 +195,11 @@ img {
   align-content: center;
   justify-content: center;
   text-indent: -2em;
+  margin-bottom: 2em;
   margin-left: 2em;
   padding: 1em;
-  display: flex;
+  padding-right: 2em;
+  display: flow-root;
 }
 
 .popup-text {
@@ -207,26 +209,44 @@ img {
 .popup-text p {
   margin-top: 0.2em;
   margin-bottom: 0em;
+  margin-left: 2em;
   padding: 0em;
+}
+
+.sources-js-code-container {
+  overflow-y: auto;
+  overflow-x: scroll;
+  width: 100%;
+  display: flow;
+  text-indent: 0em;
+}
+
+.sources-js-code pre {
+  overflow: auto;
 }
 
 .popup-button-container {
   align-content: center;
-  background-color: #00000099;
-  border-radius: 1em;
-  bottom: 0.5em;
-  display: block;
+  display: flow;
   margin-bottom: 1em;
   margin-left: 42%;
   margin-top: 1em;
-  padding-left: 1em;
-  padding-right: 1em;
-  width: max-content;
+  width: fit-content;
+  position: relative;
+  text-align: center;
 }
 
 .popup-button {
   color: white;
   text-decoration: none;
+  align-content: center;
+  background-color: #00000099;
+  padding-left: 1em;
+  padding-right: 1em;
+  padding-top: 0.2em;
+  padding-bottom: 0.2em;
+  border-radius: 1em;
+  text-align: center;
 }
 
 

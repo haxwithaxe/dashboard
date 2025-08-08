@@ -6,23 +6,22 @@ const helpText = `<div class="popup-text">
 // Load from value in config.js
 window.dashboard = Config.create(userSettings);
 
-// Reload on refresh button click.
 document.getElementById("refresh-button").querySelector("a").onclick = (() => {
   window.location.reload();
   dashboard.tiles.start();
 });
 document.getElementById("sources-button").querySelector("a").onclick = ((event) => {
   event.preventDefault();
-  const pre = document.createElement("pre");
-  pre.classList.add("code");
+  const template = createFromTemplate("sources-js");
+  const code = template.querySelector("pre");
   fetch("config.js").then((got) =>
     got.text().then((text) =>
-      pre.innerText = text
+      code.innerText = text
     )
   ).catch((error) =>
-    pre.innerText = "Failed to load 'config.js'."
+    code.innerText = "Failed to load 'config.js'."
   );
-  dashboard.popup("Configuration", pre);
+  dashboard.popup("Configuration", template);
   dashboard.menu.hide();
 });
 // Back out of all alternate views on back button click.
@@ -86,7 +85,6 @@ document.getElementById("global-menu-icon").onclick = (
   (event) => {
     event.preventDefault();
     dashboard.menu.show();
-    console.debug("global menu onclick");
   }
 );
 if (dashboard.feeds.length > 0) {
