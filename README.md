@@ -1,5 +1,5 @@
 # Description
-***Work In Progress***
+***Alpha*** Stuff might still fundamentally change but this is it for new features for now.
 
 This is a dashboard based loosely on [hamdashboard](https://github.com/VA3HDL/hamdashboard). The configuration interface is "simplified" and it has a few more small features.
 
