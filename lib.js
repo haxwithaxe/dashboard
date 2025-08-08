@@ -1817,6 +1817,7 @@ class FocusedTile extends Tile {
     this.menuIconId = `menu-icon-${this.id}`;
     this.insert();
     this.insertMenu();
+    this._imageHelper = new ImageHelper(this.imageId, this);
     showFocusedTile();
     super.show();
   }
