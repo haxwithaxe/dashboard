@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    branches: [ "main" ]
+    # Publish semver tags as releases.
+    tags: [ 'v*.*.*' ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update CHANGELOG
+        id: changelog
+        uses: requarks/changelog-action@v1
+        with:
+          token: ${{ github.token }}
+          tag: ${{ github.ref_name }}
+
+      - name: Build release assets
+        run: |
+          git archive --format=zip --output="dashboard-${{ github.ref_name }}-${{ github.sha }}.zip" ${{ github.ref_name }}
+          git archive --format=tar.gz --output="dashboard-${{ github.ref_name }}-${{ github.sha }}.tar.gz" ${{ github.ref_name }}
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true 
+          files: |
+            dashboard-${{ github.ref_name }}-${{ github.sha }}.zip
+            dashboard-${{ github.ref_name }}-${{ github.sha }}.tar.gz
+
+      - name: Commit CHANGELOG.md
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          branch: main
+          commit_message: 'docs: Update CHANGELOG.md for ${{ github.ref_name }} [skip ci]'
+          file_pattern: CHANGELOG.md
