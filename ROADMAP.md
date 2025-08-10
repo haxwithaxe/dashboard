@@ -6,3 +6,6 @@ No timelines just planned changes.
 
 ## Version v2.0.0 (pending demonstration of interest)
 * Configuration GUI
+
+## Unplanned Features
+* Mobile view/fully responsive UI
