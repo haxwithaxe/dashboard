@@ -245,6 +245,52 @@ function parseInterval(interval_string) {
 }
 
 
+/* Get the pixel value of an element as a Float
+ *
+ * Arguments:
+ *   elem (DOM element): The element to find the properties of.
+ *   prop (string): The CSS property to convert.
+ *
+ * Returns:
+ *   A Float of the number of pixels.
+ */
+function styleToNumber(elem, prop) {
+  const px = getComputedStyle(elem).getPropertyValue(prop);
+  if (px == null) {
+    return null;
+  }
+  return parseFloat(px.replace("px", ""));
+}
+
+
+// Recalculate the CSS sizes of important elements.
+function recalculateCssVars() {
+  var tickerHeight = styleToNumber(document.getElementById("feed-ticker"), "height"); // px
+  var topBarHeight = styleToNumber(document.getElementById("top-bar-container"), "height"); // px
+  if (topBarHeight == null) {
+    topBarHeight = window.innerHeight * 0.06;
+  }
+  const tileWidth = window.innerWidth / dashboard.columns; // px
+  const dashboardHeight = window.innerHeight - topBarHeight - tickerHeight; // px
+  const tileHeight = dashboardHeight / dashboard.rows; // px
+  document.documentElement.style.setProperty(
+    "--dashboard-height",
+    `${dashboardHeight}px`,
+  );
+  document.documentElement.style.setProperty(
+    "--tile-height",
+    `${tileHeight}px`,
+  );
+  document.documentElement.style.setProperty(
+    "--tile-width",
+    `${tileWidth}px`,
+  );
+  document.documentElement.style.setProperty(
+    "--top-bar-height",
+    `${topBarHeight}px`,
+  );
+}
+
 // Show the focused-container.
 function showFocusedContainer() {
   const container = document.getElementById("focused-container");
@@ -593,6 +639,7 @@ class Dashboard extends Item {
     hideFocusedContainer();
     this.topBar.show();
     this.menu.hide();
+    recalculateCssVars();
     this.tiles.start();
   }
 

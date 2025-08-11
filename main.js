@@ -52,32 +52,6 @@ updateButton.querySelector("a").href = projectReleasesUrl;
 updateButton.querySelector("a").target = "_blank";
 // Reload on window resize.
 window.addEventListener("resize", (() => window.location.reload()));
-const tickerHeight = dashboard.feeds.length > 0 ? 5 : 0;  // vh
-const topBarHeight = 6;  // vh
-const dashboardGrid = "auto ".repeat(dashboard.columns);
-const tileWidth = 99.6 / dashboard.columns + "vw";
-const dashboardHeight = 100 - topBarHeight - tickerHeight;  // vh
-const tileHeight = dashboardHeight / dashboard.rows + "vh";
-document.documentElement.style.setProperty(
-  "--tiles-layout",
-  dashboardGrid
-);
-document.documentElement.style.setProperty(
-  "--dashboard-height",
-  dashboardHeight
-);
-document.documentElement.style.setProperty(
-  "--tile-height",
-  tileHeight
-);
-document.documentElement.style.setProperty(
-  "--tile-width",
-  tileWidth
-);
-document.documentElement.style.setProperty(
-  "--top-bar-height",
-  topBarHeight
-);
 // Load Initial Data
 dashboard.start();
 // Show global menu on menu button click.

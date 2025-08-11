@@ -16,9 +16,11 @@ img {
 
 /* Default values for grid layout 4 cols x 3 rows */
 :root {
+  --top-bar-height: auto;
+  --ticker-height: 2em;
   --tiles-layout: auto auto auto auto;
-  --tile-width: 24.9vw;
-  --tile-height: 31vh;
+  --tile-width: auto;
+  --tile-height: calc((100vh - var(--top-bar-height) - var(--ticker-height)) / 3);
 }
 
 .button {
@@ -46,7 +48,8 @@ img {
   overflow: hidden;
   position: relative;
   width: 100%;
-  height: var(--dashboard-height);
+  height: calc(var(--dashboard-height) - 1vh);
+  --webkit-height: var(--dashboard-height);
 }
 
 .default-frame {
@@ -67,9 +70,9 @@ img {
 /* Feeds */
 .feed-ticker {
   background-color: #000000aa;
-  bottom: 0;
+  bottom: 0em;
   box-sizing: border-box;
-  font-size: 2vh;
+  font-size: 1em;
   font-weight: normal;
   overflow: hidden;
   padding: 0em;
@@ -77,6 +80,7 @@ img {
   position: relative;
   white-space: nowrap;
   width: 100%;
+  height: var(--ticker-height);
 }
 
 .feeds-container {
@@ -85,6 +89,7 @@ img {
   display: inline-block;
   height: 2em;
   margin-left: 100%;
+  --webkit-margin-top: 0.2em;
 }
 
 .feed-container {
