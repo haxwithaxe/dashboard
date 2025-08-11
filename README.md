@@ -76,7 +76,6 @@ The top bar contains a back button (far left), 3 text sections, and a menu butto
 ### Sections
 Each section has the following options.
 * `bgColor` (string, optional) - Override the background color with an HTML color code.
-* `dateFormatLocal` (string, optional) - The locale to format the date and time parts with (eg `"en-US"`). Defaults to the browser's value.
 * `dateFormatTimeZone` (string, optional) - IANA time zone to format the date and time with (eg `"Etc/UTC"` or `"America/New_York"`). Defaults to the browser's value.
 * `dateFormat` (string, optional) - C `strftime` style date and time format. See the [Date Formats](#date-formats) section for details. Different defaults for each section.
 * `textColor` (string, optional) - Override the text color with an HTML color code.

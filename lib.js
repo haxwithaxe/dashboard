@@ -62,14 +62,13 @@ function generateId(uniquish) {
  *   formatStr (string): A string with C strftime style format codes.
  *   timezone (string, optional): IANA time zone string. For example 
  *     "America/New_York" or "Etc/UTC".
- *   locale (string, optional): A locale string. For example "en-US".
  *
  * Returns:
  *   A function that formats the time (Date object) given as the argument.
  */
-function getDateFormatter(formatStr, timezone, locale) {
+function getDateFormatter(formatStr, timezone) {
   return ((date) => {
-    const parts = getDateParts(date, timezone, locale);
+    const parts = getDateParts(date, timezone);
     return (formatStr
       .replace("%Y", parts.year4)
       .replace("%y", parts.year2)
@@ -119,18 +118,17 @@ function zeroPad(string, length) {
  *   date (Date): A Date object.
  *   timezone (string, optional): IANA time zone string. For example 
  *     "America/New_York" or "Etc/UTC".
- *   locale (string, optional): A locale string. For example "en-US".
  *
  * Returns:
  *   An object with date and time parts as strings.
  */
-function getDateParts(date, timezone, locale) {
+function getDateParts(date, timezone) {
   const tzDate = new Date(date.toLocaleString(
-    locale,
+    "en-US",
     {timeZone: timezone, timeZoneName: "short"}
   ));
   const localeString = ((options, override) => tzDate.toLocaleString(
-    override !== undefined ? override : locale,
+    override !== undefined ? override : "en-US",
     Object.assign({timeZone: timezone}, options)
   ));
   const parts = {
@@ -2027,7 +2025,6 @@ class Tiles extends Collection {
  *   textColor (HTML color code): Override the text color.
  *   bgColor (HTML color code): Override the background color.
   *  dateFormat (string): Override the date format.
-  *  dateFormatLocale (string): Specify the locale to format the date.
   *  dateFormatTimeZone (string): Specify the IANA time zone for date
   *    formatting.
  */
@@ -2037,7 +2034,6 @@ class TopBarPart extends Item {
   textColor = null;
   bgColor = null;
   dateFormat = null;
-  dateFormatLocale;
   dateFormatTimeZone;
 
   _dateFormatter;
@@ -2052,7 +2048,6 @@ class TopBarPart extends Item {
       this._dateFormatter = getDateFormatter(
         this.dateFormat,
         this.dateFormatTimeZone,
-        this.dateFormatLocale
       );
     }
   }
